@@ -9,5 +9,5 @@
 ## 수정 후 배포
 
 1. `index.html` 수정
-2. `sw.js` 의 `CACHE` 버전을 올림 (`sudoku-v1` → `sudoku-v2`). 올리지 않으면 이미 설치한 폰에 예전 파일이 계속 표시된다.
+2. 버전 숫자 세 곳을 같은 값으로 올림: `sw.js` 의 `CACHE`(`sudoku-v5` → `sudoku-v6`), `index.html` 의 `APP_VERSION`, `version.json`. 앱은 열릴 때마다 `version.json` 을 확인해서 자기 버전보다 크면 새로 불러온다.
 3. 커밋 후 `main` 에 푸시하면 GitHub Pages 가 1~2분 안에 반영

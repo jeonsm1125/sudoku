@@ -171,6 +171,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .help { font-size: .78rem; color: var(--muted); text-align: center; line-height: 1.6; margin: 0; }
 .help kbd { font-family: var(--font-digit); font-size: .72rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--surface); }
 @media (hover: none) { .help { display: none; } }
+.ver { font: 400 .7rem var(--font-digit); color: var(--muted); text-align: center; margin: 0; opacity: .7; }
 @media (prefers-reduced-motion: no-preference) {
   .cell { transition: background-color .12s ease; }
   .overlay { animation: fade .3s ease; }
@@ -247,6 +248,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
   <div class="pad" id="pad"></div>
 
   <p class="help"><kbd>1</kbd>–<kbd>9</kbd> 입력 · <kbd>←↑→↓</kbd> 이동 · <kbd>Backspace</kbd> 지우기 · <kbd>N</kbd> 메모 · <kbd>P</kbd> 일시정지 · <kbd>Ctrl</kbd>+<kbd>Z</kbd> 되돌리기</p>
+  <p class="ver" id="ver"></p>
 </div>
 
 <script>
@@ -747,6 +749,30 @@ function SudokuGenFactory() {
 })();
 </script>
 <script>
+// 버전: sw.js 의 CACHE, version.json 과 같은 숫자로 함께 올린다
+const APP_VERSION = 5;
+document.getElementById('ver').textContent = '버전 ' + APP_VERSION;
+
+// 서버의 최신 버전을 확인하고, 더 새로우면 저장된 파일을 지우고 새로 불러온다.
+// 홈 화면 앱이 서비스 워커 업데이트를 놓쳐도 이 확인으로 따라잡는다.
+async function checkLatest() {
+  try {
+    const res = await fetch('./version.json?t=' + Date.now(), { cache: 'no-store' });
+    const latest = (await res.json()).version;
+    if (!(latest > APP_VERSION)) return;
+    let tried = null; try { tried = sessionStorage.getItem('sudoku-reload-for'); } catch (e) {}
+    if (tried === String(latest)) return; // 서버 반영이 덜 된 경우 무한 새로고침 방지
+    try { sessionStorage.setItem('sudoku-reload-for', String(latest)); } catch (e) {}
+    if (window.caches) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.update().catch(() => {});
+    location.reload();
+  } catch (e) {}
+}
+checkLatest();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkLatest(); });
+window.addEventListener('pageshow', e => { if (e.persisted) checkLatest(); });
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
