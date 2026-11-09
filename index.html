@@ -213,6 +213,61 @@ h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spac
 .help kbd { font-family: var(--font-digit); font-size: .72rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--surface); }
 .help { display: none; }
 @media (hover: hover) and (pointer: fine) { .help { display: block; } }
+/* 시작 화면 머리: 제목 + 기록 버튼 */
+.home-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.statsbtn {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font: 600 .88rem var(--font-body); padding: 8px 14px; border-radius: 999px; cursor: pointer;
+}
+.statsbtn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.statsbtn:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 기록 화면 */
+.stats { max-width: 480px; margin: 0 auto; padding-block: 8px 32px; display: flex; flex-direction: column; gap: 22px; }
+.stats h3 { margin: 0 0 10px; font-size: .75rem; font-weight: 600; color: var(--muted); letter-spacing: .08em; }
+.result-hero { border: 1px solid var(--line); border-radius: 18px; padding: 20px; background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
+.result-hero .eyebrow { margin: 0; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem; font-weight: 600; }
+.result-hero h2 { margin: 0; font: 800 2rem var(--font-display); letter-spacing: -0.02em; }
+.result-hero.win h2 { color: var(--hint); }
+.result-hero.fail h2 { color: var(--error); }
+.res-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.res-badges:empty { display: none; }
+.badge-pill { font: 600 .78rem var(--font-body); padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.badge-pill.gold { background: color-mix(in srgb, #E0A800 18%, var(--surface)); color: color-mix(in srgb, #B07F00 85%, var(--ink)); }
+.res-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+.res-grid div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.res-grid dt { font-size: .72rem; color: var(--muted); margin-bottom: 2px; }
+.res-grid dd { margin: 0; font: 400 1.2rem var(--font-digit); font-variant-numeric: tabular-nums; }
+.res-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.res-actions button { flex: 1 1 140px; }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.chip {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 4px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--ink); font: 600 .82rem var(--font-body); cursor: pointer; white-space: nowrap;
+}
+.chip[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .pips { height: 9px; }
+.kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.kpi { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--surface); }
+.kpi span { display: block; font-size: .75rem; color: var(--muted); }
+.kpi b { display: block; font: 400 1.45rem var(--font-digit); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.kpi small { font-size: .72rem; color: var(--muted); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.lv-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.lv-table th { font-size: .72rem; font-weight: 600; color: var(--muted); text-align: right; padding: 10px 12px 8px; white-space: nowrap; }
+.lv-table th:first-child, .lv-table td:first-child { text-align: left; }
+.lv-table td { padding: 9px 12px; border-top: 1px solid var(--grid-thin); text-align: right; font-family: var(--font-digit); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lv-table td:first-child { font-family: var(--font-body); font-weight: 600; }
+.recent { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.recent li { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--grid-thin); font-size: .85rem; }
+.recent li:first-child { border-top: 0; }
+.recent .when { color: var(--muted); font: 400 .78rem var(--font-digit); font-variant-numeric: tabular-nums; }
+.recent .lv { font-weight: 600; }
+.recent .t { font-family: var(--font-digit); font-variant-numeric: tabular-nums; }
+.pill { font: 600 .72rem var(--font-body); padding: 2px 8px; border-radius: 999px; }
+.pill.win { background: color-mix(in srgb, var(--hint) 15%, var(--surface)); color: var(--hint); }
+.pill.fail { background: var(--error-soft); color: var(--error); }
+.empty { margin: 0; padding: 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; line-height: 1.6; }
 .ver { font: 400 .7rem var(--font-digit); color: var(--muted); text-align: center; margin: 0; opacity: .7; }
 @media (prefers-reduced-motion: no-preference) {
   .cell { transition: background-color .12s ease; }
@@ -226,6 +281,9 @@ h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spac
 <main class="home" id="home">
   <header class="home-head">
     <h1>스도쿠<small>SUDOKU</small></h1>
+    <button type="button" class="statsbtn" id="statsBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>기록
+    </button>
   </header>
 
   <button type="button" class="continue" id="continueBtn" hidden>
@@ -246,6 +304,61 @@ h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spac
 
   <p class="help"><kbd>1</kbd>–<kbd>9</kbd> 입력 · <kbd>←↑→↓</kbd> 이동 · <kbd>Backspace</kbd> 지우기 · <kbd>N</kbd> 메모 · <kbd>P</kbd> 일시정지 · <kbd>Ctrl</kbd>+<kbd>Z</kbd> 되돌리기 · <kbd>Esc</kbd> 목록</p>
   <p class="ver" id="ver"></p>
+</main>
+
+<main class="stats" id="stats" hidden>
+  <div class="topbar">
+    <button type="button" class="backbtn" id="statsBack">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>목록
+    </button>
+  </div>
+
+  <section class="result-hero" id="resultHero" hidden>
+    <p class="eyebrow"><span class="pips" id="resPips" aria-hidden="true"></span><span id="resLevel"></span></p>
+    <h2 id="resTitle"></h2>
+    <div class="res-badges" id="resBadges"></div>
+    <dl class="res-grid">
+      <div><dt>시간</dt><dd id="resTime"></dd></div>
+      <div><dt>실수</dt><dd id="resMistakes"></dd></div>
+      <div><dt>힌트</dt><dd id="resHints"></dd></div>
+    </dl>
+    <div class="res-actions">
+      <button type="button" class="btn-primary" id="resPrimary"></button>
+      <button type="button" class="btn-ghost" id="resSecondary" hidden></button>
+    </div>
+  </section>
+
+  <section>
+    <h3 id="nextTitle">다음 게임</h3>
+    <div class="chips" id="nextLevels"></div>
+  </section>
+
+  <p class="empty" id="statsEmpty" hidden>아직 기록이 없어요.<br>한 판을 끝내면 여기에 시간과 실수가 쌓여요.</p>
+
+  <section id="statsBody">
+    <h3>전체</h3>
+    <div class="kpis">
+      <div class="kpi"><span>플레이</span><b id="kPlays"></b><small id="kPlaysSub"></small></div>
+      <div class="kpi"><span>완성률</span><b id="kRate"></b><small id="kRateSub"></small></div>
+      <div class="kpi"><span>연속 완성</span><b id="kStreak"></b><small id="kStreakSub"></small></div>
+      <div class="kpi"><span>총 플레이 시간</span><b id="kTime"></b><small id="kTimeSub"></small></div>
+    </div>
+  </section>
+
+  <section id="levelSection">
+    <h3>난이도별</h3>
+    <div class="table-wrap">
+      <table class="lv-table">
+        <thead><tr><th>난이도</th><th>완성/시도</th><th>최고</th><th>평균</th><th>평균 실수</th></tr></thead>
+        <tbody id="lvTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="recentSection">
+    <h3>최근 게임</h3>
+    <ul class="recent" id="recentList"></ul>
+  </section>
 </main>
 
 <main class="game" id="game" hidden>
@@ -630,12 +743,25 @@ function SudokuGenFactory() {
       return { ...s, history: [] };
     } catch (e) { return null; }
   };
-  const loadStats = () => { try { const t = JSON.parse(localStorage.getItem(STATS_KEY)); if (t && t.best && t.solved) return t; } catch (e) {} return { best: {}, solved: {} }; };
-  const saveStats = t => { try { localStorage.setItem(STATS_KEY, JSON.stringify(t)); } catch (e) {} };
+  // 게임 기록: 끝난 게임마다 { t: 끝난 시각, l: 난이도, r: 'win'|'fail', s: 초, m: 실수, h: 힌트 } 한 줄
+  const HISTORY_KEY = 'classic-sudoku-history';
+  const loadHistory = () => { try { const a = JSON.parse(localStorage.getItem(HISTORY_KEY)); if (Array.isArray(a)) return a; } catch (e) {} return []; };
+  const saveHistory = a => { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(a.slice(-1000))); } catch (e) {} };
+  // 기록 화면 도입 전(버전 7 이하)의 최고 기록
+  const legacyBest = () => { try { const t = JSON.parse(localStorage.getItem(STATS_KEY)); if (t && t.best) return t.best; } catch (e) {} return {}; };
+  function levelStats(hist, l) {
+    const plays = hist.filter(g => g.l === l), wins = plays.filter(g => g.r === 'win');
+    const lb = legacyBest()[l];
+    const bestH = wins.length ? Math.min(...wins.map(g => g.s)) : null;
+    const best = bestH == null ? (lb ?? null) : (lb != null ? Math.min(lb, bestH) : bestH);
+    const avg = wins.length ? Math.round(wins.reduce((a, g) => a + g.s, 0) / wins.length) : null;
+    const avgM = plays.length ? plays.reduce((a, g) => a + g.m, 0) / plays.length : null;
+    return { tries: plays.length, wins: wins.length, best, avg, avgM };
+  }
   let noteMode = false;
   let busy = false, busyLevel = 0;
   let screen = 'home';
-  let lastWinBest = false;
+  let lastResult = null; // 방금 끝난 게임 (기록 화면 맨 위에 표시)
 
   const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
   const pipsHtml = idx => { let h = ''; for (let k = 0; k < 7; k++) h += '<i class="' + (k <= idx ? 'on' : '') + '" style="height:' + (40 + k * 10) + '%"></i>'; return h; };
@@ -662,22 +788,30 @@ function SudokuGenFactory() {
     const cont = $('continueBtn');
     cont.hidden = !inProgress();
     if (!cont.hidden) $('continueMeta').textContent = LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + mistakeText();
-    const st = loadStats();
+    const hist = loadHistory();
     LEVELS.forEach((lv, idx) => {
-      const best = st.best[idx], n = st.solved[idx] || 0;
+      const ls = levelStats(hist, idx), best = ls.best, n = ls.wins;
       $('best-' + idx).innerHTML = best != null ? '최고 기록<b>' + fmt(best) + '</b>' : '';
       levelRows[idx].setAttribute('aria-label', (idx + 1) + '단계 ' + lv.label + (best != null ? ', 최고 기록 ' + fmt(best) + ', ' + n + '판 완성' : ''));
     });
   }
 
   // 화면 전환: 게임 화면은 주소 끝에 #play 를 붙여 폰의 뒤로가기로 목록에 돌아오게 한다
+  // 주소: #play 게임, #result 방금 끝난 게임의 기록, #stats 목록에서 연 기록
   function showScreen(name, push = true) {
     screen = name;
     $('home').hidden = name !== 'home';
     $('game').hidden = name !== 'game';
+    $('stats').hidden = name !== 'stats';
     if (name === 'game') {
-      if (push && location.hash !== '#play') history.pushState(null, '', '#play');
+      if (push && location.hash !== '#play') {
+        // 기록 화면에서 바로 다음 게임으로 가면 기록 화면 자리를 게임으로 바꿔, 뒤로가기가 목록으로 오게 한다
+        if (location.hash === '#result' || location.hash === '#stats') history.replaceState(null, '', '#play');
+        else history.pushState(null, '', '#play');
+      }
       render(); fitBoard();
+    } else if (name === 'stats') {
+      renderStats(location.hash === '#result' && !!lastResult);
     } else {
       $('confirm').hidden = true; pendingLevel = null;
       renderHome();
@@ -685,10 +819,13 @@ function SudokuGenFactory() {
     window.scrollTo(0, 0);
   }
   function goHome() {
-    if (location.hash === '#play') history.back();
+    if (location.hash) history.back();
     else showScreen('home', false);
   }
-  window.addEventListener('popstate', () => { showScreen(location.hash === '#play' && S ? 'game' : 'home', false); });
+  window.addEventListener('popstate', () => {
+    const h = location.hash;
+    showScreen(h === '#play' && S ? 'game' : (h === '#stats' || h === '#result') ? 'stats' : 'home', false);
+  });
 
   // 게임 화면 구성
   const board = $('board');
@@ -774,25 +911,32 @@ function SudokuGenFactory() {
     $('win').hidden = !S.done || busy;
     $('fail').hidden = !S.failed || busy;
     if (S.failed) $('failText').textContent = '실수 ' + mistakeText() + ' · ' + LEVELS[S.level].label + ' · ' + fmt(S.seconds);
-    if (S.done) $('winText').textContent = (lastWinBest ? '최고 기록 · ' : '') +
+    if (S.done) $('winText').textContent = (lastResult && lastResult.best ? '최고 기록 · ' : '') +
       LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + mistakeText() + ' · 힌트 ' + (HINTS - S.hintsLeft) + '회';
   }
 
   const snapshot = () => { S.history.push({ values: S.values.slice(), notes: S.notes.slice(), hinted: S.hinted.slice() }); if (S.history.length > 200) S.history.shift(); };
   const editable = i => !!S && !busy && !S.paused && i >= 0 && !over() && S.puzzle[i] === 0 && !S.hinted[i];
 
-  function recordWin() {
-    const st = loadStats(), l = S.level;
-    st.solved[l] = (st.solved[l] || 0) + 1;
-    lastWinBest = st.best[l] == null || S.seconds < st.best[l];
-    if (lastWinBest) st.best[l] = S.seconds;
-    saveStats(st);
+  // 게임이 끝나면 기록에 한 줄 추가하고, 완성된 판을 잠깐 보여 준 뒤 기록 화면으로 넘어간다
+  function endGame(result) {
+    if (S.recorded) return;
+    S.recorded = true;
+    const hist = loadHistory(), before = levelStats(hist, S.level);
+    const g = { t: Date.now(), l: S.level, r: result, s: S.seconds, m: S.mistakes, h: HINTS - S.hintsLeft };
+    hist.push(g); saveHistory(hist);
+    lastResult = { ...g, best: result === 'win' && (before.best == null || g.s < before.best), prevAvg: before.avg, firstWin: result === 'win' && before.wins === 0 };
+    setTimeout(() => {
+      if (screen !== 'game' || !S || !S.recorded) return;
+      history.replaceState(null, '', '#result');
+      showScreen('stats', false);
+    }, 1100);
   }
   function place(i, d) {
     S.values[i] = d; S.notes[i] = 0;
     if (d === S.solution[i]) PEERS[i].forEach(p => { S.notes[p] &= ~(1 << d); });
-    else { S.mistakes++; if (S.mistakes >= MAX_MISTAKES) { S.failed = true; return; } }
-    if (S.values.every((v, k) => v === S.solution[k])) { S.done = true; recordWin(); }
+    else { S.mistakes++; if (S.mistakes >= MAX_MISTAKES) { S.failed = true; endGame('fail'); return; } }
+    if (S.values.every((v, k) => v === S.solution[k])) { S.done = true; endGame('win'); }
   }
 
   const isComplete = d => S.values.filter((v, k) => v === d && v === S.solution[k]).length >= 9;
@@ -843,7 +987,6 @@ function SudokuGenFactory() {
   async function startNew(level) {
     if (busy) return;
     $('confirm').hidden = true; pendingLevel = null;
-    lastWinBest = false;
     S = blank(level); busy = true; busyLevel = level;
     showScreen('game');
     const gen = await generateAsync(level);
@@ -851,14 +994,89 @@ function SudokuGenFactory() {
     if (screen === 'game') render(); else renderHome();
   }
 
+  // 기록 화면
+  const fmtLong = sec => { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60); return h ? h + '시간 ' + m + '분' : m ? m + '분 ' + (sec % 60) + '초' : sec + '초'; };
+  const fmtWhen = t => { const d = new Date(t), p = n => String(n).padStart(2, '0'); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
+  const chipBtns = LEVELS.map((lv, idx) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.id = 'chip-' + idx;
+    b.innerHTML = '<span class="pips" aria-hidden="true">' + pipsHtml(idx) + '</span>' + lv.label;
+    b.setAttribute('aria-label', (idx + 1) + '단계 ' + lv.label + ' 새 게임');
+    b.addEventListener('click', () => startNew(idx));
+    $('nextLevels').appendChild(b);
+    return b;
+  });
+  function renderStats(withHero) {
+    const hist = loadHistory();
+    const hero = $('resultHero'), R = withHero ? lastResult : null;
+    hero.hidden = !R;
+    if (R) {
+      const win = R.r === 'win';
+      hero.className = 'result-hero ' + (win ? 'win' : 'fail');
+      $('resPips').innerHTML = pipsHtml(R.l);
+      $('resLevel').textContent = (R.l + 1) + '단계 ' + LEVELS[R.l].label;
+      $('resTitle').textContent = win ? '완성했어요' : '실패했어요';
+      const badges = [];
+      if (R.best) badges.push('<span class="badge-pill gold">' + (R.firstWin ? '첫 완성' : '최고 기록') + '</span>');
+      if (win && R.prevAvg != null && R.prevAvg !== R.s) badges.push('<span class="badge-pill">평균보다 ' + fmt(Math.abs(R.prevAvg - R.s)) + (R.s < R.prevAvg ? ' 빨라요' : ' 느려요') + '</span>');
+      if (win && R.m === 0 && R.h === 0) badges.push('<span class="badge-pill">실수·힌트 없이 완성</span>');
+      $('resBadges').innerHTML = badges.join('');
+      $('resTime').textContent = fmt(R.s);
+      $('resMistakes').textContent = R.m + '/' + MAX_MISTAKES;
+      $('resHints').textContent = R.h + '회';
+      $('resPrimary').textContent = win ? '한 판 더 · ' + LEVELS[R.l].label : '같은 문제 다시';
+      $('resSecondary').hidden = win;
+      $('resSecondary').textContent = '새 문제';
+    }
+    const cur = R ? R.l : (S ? S.level : 2);
+    chipBtns.forEach((b, idx) => b.setAttribute('aria-current', idx === cur));
+    $('nextTitle').textContent = R ? '다음 게임' : '새 게임';
+
+    const empty = hist.length === 0;
+    $('statsEmpty').hidden = !empty;
+    $('statsBody').hidden = empty; $('levelSection').hidden = empty; $('recentSection').hidden = empty;
+    if (empty) return;
+
+    const wins = hist.filter(g => g.r === 'win');
+    $('kPlays').textContent = hist.length + '판';
+    $('kPlaysSub').textContent = '완성 ' + wins.length + ' · 실패 ' + (hist.length - wins.length);
+    $('kRate').textContent = Math.round(wins.length / hist.length * 100) + '%';
+    $('kRateSub').textContent = '평균 실수 ' + (hist.reduce((a, g) => a + g.m, 0) / hist.length).toFixed(1) + '회';
+    let streak = 0; for (let k = hist.length - 1; k >= 0 && hist[k].r === 'win'; k--) streak++;
+    let bestStreak = 0, run = 0; hist.forEach(g => { run = g.r === 'win' ? run + 1 : 0; if (run > bestStreak) bestStreak = run; });
+    $('kStreak').textContent = streak + '판';
+    $('kStreakSub').textContent = '최고 ' + bestStreak + '판';
+    const total = hist.reduce((a, g) => a + g.s, 0);
+    $('kTime').textContent = fmtLong(total);
+    $('kTimeSub').textContent = '한 판 평균 ' + fmt(Math.round(total / hist.length));
+
+    $('lvTable').innerHTML = LEVELS.map((lv, idx) => {
+      const ls = levelStats(hist, idx);
+      if (!ls.tries && ls.best == null) return '';
+      const dash = '–';
+      return '<tr><td>' + lv.label + '</td><td>' + (ls.tries ? ls.wins + '/' + ls.tries : dash) + '</td><td>' + (ls.best != null ? fmt(ls.best) : dash) +
+        '</td><td>' + (ls.avg != null ? fmt(ls.avg) : dash) + '</td><td>' + (ls.avgM != null ? ls.avgM.toFixed(1) : dash) + '</td></tr>';
+    }).join('');
+
+    $('recentList').innerHTML = hist.slice(-10).reverse().map(g =>
+      '<li><span class="when">' + fmtWhen(g.t) + '</span><span class="lv">' + LEVELS[g.l].label + '</span>' +
+      '<span class="t">' + fmt(g.s) + ' · 실수 ' + g.m + '</span><span class="pill ' + g.r + '">' + (g.r === 'win' ? '완성' : '실패') + '</span></li>'
+    ).join('');
+  }
+  const retrySame = () => {
+    S = fresh(S.level, { puzzle: S.puzzle, solution: S.solution, tech: S.tech }); noteMode = false; save(); showScreen('game');
+  };
+  $('statsBtn').addEventListener('click', () => { history.pushState(null, '', '#stats'); showScreen('stats', false); });
+  $('statsBack').addEventListener('click', goHome);
+  $('resPrimary').addEventListener('click', () => { if (!lastResult) return; if (lastResult.r === 'win') startNew(lastResult.l); else retrySame(); });
+  $('resSecondary').addEventListener('click', () => { if (lastResult) startNew(lastResult.l); });
+
   $('continueBtn').addEventListener('click', () => showScreen('game'));
   $('backBtn').addEventListener('click', goHome);
   $('winNew').addEventListener('click', () => startNew(S.level));
   $('winHome').addEventListener('click', goHome);
   // 실패 후: 같은 문제를 처음 상태로 되돌리거나 새 문제로 시작
-  $('failRetry').addEventListener('click', () => {
-    S = fresh(S.level, { puzzle: S.puzzle, solution: S.solution, tech: S.tech }); noteMode = false; save(); render();
-  });
+  $('failRetry').addEventListener('click', retrySame);
   $('failNew').addEventListener('click', () => startNew(S.level));
   $('failHome').addEventListener('click', goHome);
   $('confirmYes').addEventListener('click', () => { if (pendingLevel != null) startNew(pendingLevel); });
@@ -903,15 +1121,17 @@ function SudokuGenFactory() {
 
   // 시작: 항상 목록부터. 게임 중에 새로고침했다면(#play) 목록 위에 게임 화면을 다시 띄워 뒤로가기가 목록으로 오게 한다
   S = load();
-  const resumePlay = location.hash === '#play' && hasGame();
+  const startHash = location.hash;
+  const resumePlay = startHash === '#play' && hasGame();
   history.replaceState(null, '', location.pathname + location.search);
   showScreen('home', false);
   if (resumePlay) showScreen('game');
+  else if (startHash === '#stats' || startHash === '#result') { history.pushState(null, '', '#stats'); showScreen('stats', false); }
 })();
 </script>
 <script>
 // 버전: sw.js 의 CACHE, version.json 과 같은 숫자로 함께 올린다
-const APP_VERSION = 8;
+const APP_VERSION = 9;
 document.getElementById('ver').textContent = '버전 ' + APP_VERSION;
 
 // 서버의 최신 버전을 확인하고, 더 새로우면 저장된 파일을 지우고 새로 불러온다.
