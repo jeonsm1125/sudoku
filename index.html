@@ -748,7 +748,19 @@ function SudokuGenFactory() {
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then(reg => {
+        // 앱을 다시 화면에 띄울 때마다 새 버전이 있는지 확인
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+      })
+      .catch(() => {});
+  });
+  // 새 버전이 설치되면 한 번 새로고침해서 바로 반영 (진행 상황은 브라우저에 저장돼 있어 유지됨)
+  if (navigator.serviceWorker.controller) {
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
+  }
 }
 </script>
 </body>
