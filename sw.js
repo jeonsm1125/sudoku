@@ -1,5 +1,5 @@
 // 오프라인 실행용 서비스 워커. 파일을 고치면 CACHE 버전을 올려야 새 파일이 반영된다.
-const CACHE = 'sudoku-v2';
+const CACHE = 'sudoku-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

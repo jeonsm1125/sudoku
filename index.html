@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>스도쿠</title>
 <meta name="description" content="입문부터 극한까지 7단계 난이도의 클래식 9×9 스도쿠">
-<meta name="theme-color" content="#E8ECF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#10141B" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -27,12 +27,14 @@ img { max-width: 100%; }
 <style>
 /* 레이아웃: 한 화면 앱. 위 상태줄 → 정사각 판 → 도구 줄 → 숫자 패드, 폭은 판 기준 최대 480px */
 :root {
-  --bg: #E8ECF1;
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
   --ink: #17202C;
   --muted: #667286;
   --line: #CCD3DD;
   --line-strong: #2A3444;
+  --grid-thin: #E2E6EC;   /* 칸 사이 선 */
+  --grid-thick: #1B2330;  /* 3×3 박스 경계선 */
   --accent: #2F55D4;
   --accent-ink: #FFFFFF;
   --accent-soft: #D5DEFA;
@@ -48,14 +50,14 @@ img { max-width: 100%; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #10141B; --surface: #19202A; --ink: #E5E9F0; --muted: #8B96A8;
-    --line: #2C3544; --line-strong: #8D98AA; --accent: #7F9CFF; --accent-ink: #0E1320;
+    --line: #2C3544; --line-strong: #8D98AA; --grid-thin: #29313D; --grid-thick: #A9B3C4; --accent: #7F9CFF; --accent-ink: #0E1320;
     --accent-soft: #263257; --peer: #1F2733; --same: #31406A; --error: #FF7B72;
     --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #10141B; --surface: #19202A; --ink: #E5E9F0; --muted: #8B96A8;
-  --line: #2C3544; --line-strong: #8D98AA; --accent: #7F9CFF; --accent-ink: #0E1320;
+  --line: #2C3544; --line-strong: #8D98AA; --grid-thin: #29313D; --grid-thick: #A9B3C4; --accent: #7F9CFF; --accent-ink: #0E1320;
   --accent-soft: #263257; --peer: #1F2733; --same: #31406A; --error: #FF7B72;
   --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
 }
@@ -109,18 +111,18 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .board-wrap { position: relative; }
 .board {
   display: grid; grid-template-columns: repeat(9, 1fr); aspect-ratio: 1; width: 100%; max-width: 100%;
-  background: var(--surface); border: 2px solid var(--line-strong); border-radius: 6px; overflow: hidden;
+  background: var(--surface); border: 3px solid var(--grid-thick); border-radius: 6px; overflow: hidden;
   user-select: none;
 }
 .cell {
   position: relative; border: 0; margin: 0; padding: 0; background: var(--surface); color: var(--ink);
-  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--grid-thin); border-bottom: 1px solid var(--grid-thin);
   font-family: var(--font-digit); font-size: clamp(1.2rem, 5.6vw, 1.75rem); font-weight: 300;
   display: grid; place-items: center; cursor: pointer; aspect-ratio: 1;
 }
 .cell:nth-child(9n) { border-right: 0; }
-.cell.c2, .cell.c5 { border-right: 2px solid var(--line-strong); }
-.cell.r2, .cell.r5 { border-bottom: 2px solid var(--line-strong); }
+.cell.c2, .cell.c5 { border-right: 3px solid var(--grid-thick); }
+.cell.r2, .cell.r5 { border-bottom: 3px solid var(--grid-thick); }
 .cell.r8 { border-bottom: 0; }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; z-index: 1; }
 .cell.peer { background: var(--peer); }
