@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>스도쿠</title>
+<meta name="description" content="입문부터 극한까지 7단계 난이도의 클래식 9×9 스도쿠">
+<meta name="theme-color" content="#E8ECF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10141B" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="스도쿠">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+/* 기본 초기화: 폰 노치·홈 바 영역(safe area)만큼 위아래 여백 확보 */
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px/1.4 system-ui, -apple-system, sans-serif; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&family=Gothic+A1:wght@400;600;800&display=swap">
+<style>
+/* 레이아웃: 한 화면 앱. 위 상태줄 → 정사각 판 → 도구 줄 → 숫자 패드, 폭은 판 기준 최대 480px */
+:root {
+  --bg: #E8ECF1;
+  --surface: #FFFFFF;
+  --ink: #17202C;
+  --muted: #667286;
+  --line: #CCD3DD;
+  --line-strong: #2A3444;
+  --accent: #2F55D4;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D5DEFA;
+  --peer: #EEF2F8;
+  --same: #C3D1F7;
+  --error: #C8352E;
+  --error-soft: #FBE1DF;
+  --hint: #0E8A6B;
+  --font-display: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-body: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-digit: "Lexend", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141B; --surface: #19202A; --ink: #E5E9F0; --muted: #8B96A8;
+    --line: #2C3544; --line-strong: #8D98AA; --accent: #7F9CFF; --accent-ink: #0E1320;
+    --accent-soft: #263257; --peer: #1F2733; --same: #31406A; --error: #FF7B72;
+    --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141B; --surface: #19202A; --ink: #E5E9F0; --muted: #8B96A8;
+  --line: #2C3544; --line-strong: #8D98AA; --accent: #7F9CFF; --accent-ink: #0E1320;
+  --accent-soft: #263257; --peer: #1F2733; --same: #31406A; --error: #FF7B72;
+  --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 28px;
+  -webkit-tap-highlight-color: transparent;
+}
+.app { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; margin: 0; letter-spacing: -0.02em; }
+h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spacing: .08em; margin-left: 6px; }
+
+.levels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+.levels button {
+  border: 0; background: transparent; color: var(--muted); font: 600 .78rem var(--font-body);
+  padding: 6px 0 7px; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.levels .pips { display: flex; gap: 2px; align-items: flex-end; height: 8px; }
+.levels .pips i { width: 3px; border-radius: 1px; background: currentColor; opacity: .25; }
+.levels .pips i.on { opacity: .9; }
+.levels button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.lvl-desc { margin: -4px 0 0; font-size: .82rem; color: var(--muted); line-height: 1.5; min-height: 2.5em; text-wrap: pretty; }
+.lvl-desc b { color: var(--ink); font-weight: 600; }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 12px; }
+@media (prefers-reduced-motion: no-preference) { .spinner { animation: spin .8s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } } }
+
+.status { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--muted); }
+.status b { font-family: var(--font-digit); font-weight: 400; color: var(--ink); font-variant-numeric: tabular-nums; margin-left: 4px; }
+.status .grp { display: flex; gap: 16px; }
+.linkbtn { border: 0; background: none; color: var(--accent); font: 600 .85rem var(--font-body); cursor: pointer; padding: 4px 0; }
+
+.confirm {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .88rem;
+}
+.confirm .btns { display: flex; gap: 8px; }
+.confirm button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 .85rem var(--font-body); padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.confirm button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.board-wrap { position: relative; }
+.board {
+  display: grid; grid-template-columns: repeat(9, 1fr); aspect-ratio: 1; width: 100%; max-width: 100%;
+  background: var(--surface); border: 2px solid var(--line-strong); border-radius: 6px; overflow: hidden;
+  user-select: none;
+}
+.cell {
+  position: relative; border: 0; margin: 0; padding: 0; background: var(--surface); color: var(--ink);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  font-family: var(--font-digit); font-size: clamp(1.2rem, 5.6vw, 1.75rem); font-weight: 300;
+  display: grid; place-items: center; cursor: pointer; aspect-ratio: 1;
+}
+.cell:nth-child(9n) { border-right: 0; }
+.cell.c2, .cell.c5 { border-right: 2px solid var(--line-strong); }
+.cell.r2, .cell.r5 { border-bottom: 2px solid var(--line-strong); }
+.cell.r8 { border-bottom: 0; }
+.cell:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; z-index: 1; }
+.cell.peer { background: var(--peer); }
+.cell.same { background: var(--same); }
+.cell.sel { background: var(--accent-soft); }
+.cell.given { font-weight: 600; }
+.cell.entered { color: var(--accent); }
+.cell.hinted { color: var(--hint); }
+.cell.err { color: var(--error); background: var(--error-soft); }
+.cell.sel.err { box-shadow: inset 0 0 0 2px var(--error); }
+.notes { position: absolute; inset: 2px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+.notes span { display: grid; place-items: center; font-size: clamp(.5rem, 2.2vw, .7rem); color: var(--muted); font-weight: 400; line-height: 1; }
+.notes span.hl { color: var(--accent); font-weight: 600; }
+
+.overlay {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border-radius: 6px;
+}
+.overlay h2 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; margin: 0 0 6px; }
+.overlay p { margin: 0 0 16px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tool {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
+  border: 0; background: transparent; color: var(--ink); font: 600 .78rem var(--font-body); cursor: pointer; border-radius: 10px;
+}
+.tool svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tool:hover { background: var(--surface); }
+.tool:focus-visible, .key:focus-visible, .levels button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tool .badge { font: 600 .65rem var(--font-body); padding: 1px 6px; border-radius: 999px; background: var(--line); color: var(--muted); }
+.tool[aria-pressed="true"] { color: var(--accent); }
+.tool[aria-pressed="true"] .badge { background: var(--accent); color: var(--accent-ink); }
+
+.pad { display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; }
+.key {
+  border: 1px solid var(--line); background: var(--surface); color: var(--accent); border-radius: 10px;
+  font-family: var(--font-digit); font-size: clamp(1.2rem, 5.4vw, 1.6rem); font-weight: 400;
+  padding: 8px 0 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.key small { font-size: .6rem; color: var(--muted); font-family: var(--font-body); }
+.key:active { background: var(--accent-soft); }
+.key.done { opacity: .3; }
+
+.btn-primary { border: 0; background: var(--accent); color: var(--accent-ink); font: 600 .95rem var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; }
+.help { font-size: .78rem; color: var(--muted); text-align: center; line-height: 1.6; margin: 0; }
+.help kbd { font-family: var(--font-digit); font-size: .72rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--surface); }
+@media (hover: none) { .help { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .cell { transition: background-color .12s ease; }
+  .overlay { animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>스도쿠<small>SUDOKU</small></h1>
+  </header>
+
+  <div class="levels" id="levels" role="group" aria-label="난이도"></div>
+  <p class="lvl-desc" id="lvlDesc"></p>
+
+  <div class="status">
+    <div class="grp">
+      <span>시간<b id="time">00:00</b></span>
+      <span>실수<b id="mistakes">0</b></span>
+    </div>
+    <button type="button" class="linkbtn" id="newBtn">새 게임</button>
+  </div>
+
+  <div class="confirm" id="confirm" hidden>
+    <span id="confirmText">진행 중인 게임을 그만두고 새로 시작할까요?</span>
+    <div class="btns">
+      <button type="button" id="confirmNo">계속하기</button>
+      <button type="button" class="primary" id="confirmYes">새로 시작</button>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board" role="grid" aria-label="스도쿠 판"></div>
+    <div class="overlay" id="win" hidden>
+      <div>
+        <h2>완성했어요</h2>
+        <p id="winText"></p>
+        <button type="button" class="btn-primary" id="winNew">새 게임</button>
+      </div>
+    </div>
+    <div class="overlay" id="busy" hidden>
+      <div>
+        <div class="spinner"></div>
+        <p id="busyText">문제를 만드는 중이에요</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <button type="button" class="tool" id="undoBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>되돌리기
+    </button>
+    <button type="button" class="tool" id="eraseBtn">
+      <svg viewBox="0 0 24 24"><path d="M20 20H8l-4-4 10-10 7 7-7 7"/><path d="m9 11 6 6"/></svg>지우기
+    </button>
+    <button type="button" class="tool" id="noteBtn" aria-pressed="false">
+      <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/></svg>
+      <span>메모 <span class="badge" id="noteBadge">OFF</span></span>
+    </button>
+    <button type="button" class="tool" id="hintBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
+      <span>힌트 <span class="badge" id="hintBadge">3</span></span>
+    </button>
+  </div>
+
+  <div class="pad" id="pad"></div>
+
+  <p class="help"><kbd>1</kbd>–<kbd>9</kbd> 입력 · <kbd>←↑→↓</kbd> 이동 · <kbd>Backspace</kbd> 지우기 · <kbd>N</kbd> 메모 · <kbd>Ctrl</kbd>+<kbd>Z</kbd> 되돌리기</p>
+</div>
+
+<script>
+/* 문제 생성기와 기법 기반 난이도 판정기. Web Worker 에도 같은 소스를 넘긴다. */
+function SudokuGenFactory() {
+  const ROW = [], COL = [], BOX = [];
+  for (let i = 0; i < 81; i++) { ROW.push(Math.floor(i / 9)); COL.push(i % 9); BOX.push(Math.floor(i / 27) * 3 + Math.floor((i % 9) / 3)); }
+  const ROWS = [], COLS = [], BOXES = [];
+  for (let k = 0; k < 9; k++) { ROWS.push([]); COLS.push([]); BOXES.push([]); }
+  for (let i = 0; i < 81; i++) { ROWS[ROW[i]].push(i); COLS[COL[i]].push(i); BOXES[BOX[i]].push(i); }
+  const UNITS = ROWS.concat(COLS, BOXES);
+  const IS_PEER = new Uint8Array(81 * 81);
+  const PEERS = [];
+  for (let i = 0; i < 81; i++) {
+    const s = [];
+    for (let j = 0; j < 81; j++) if (i !== j && (ROW[i] === ROW[j] || COL[i] === COL[j] || BOX[i] === BOX[j])) { s.push(j); IS_PEER[i * 81 + j] = 1; }
+    PEERS.push(s);
+  }
+  const POP = new Uint8Array(1024);
+  for (let m = 1; m < 1024; m++) POP[m] = POP[m >> 1] + (m & 1);
+  const lowDigit = m => 31 - Math.clz32(m & -m);
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+
+  // 백트래킹: limit 개까지 해의 수를 센다. fill 이면 첫 해를 g 에 남긴다.
+  function solve(g, limit, randomize, fill) {
+    const R = new Uint16Array(9), C = new Uint16Array(9), B = new Uint16Array(9);
+    for (let i = 0; i < 81; i++) {
+      const v = g[i]; if (!v) continue;
+      const bit = 1 << v;
+      if ((R[ROW[i]] | C[COL[i]] | B[BOX[i]]) & bit) return 0;
+      R[ROW[i]] |= bit; C[COL[i]] |= bit; B[BOX[i]] |= bit;
+    }
+    let count = 0;
+    const rec = () => {
+      let best = -1, bestMask = 0, bestCnt = 10;
+      for (let i = 0; i < 81; i++) {
+        if (g[i]) continue;
+        const m = ~(R[ROW[i]] | C[COL[i]] | B[BOX[i]]) & 0x3FE;
+        const n = POP[m];
+        if (n === 0) return false;
+        if (n < bestCnt) { best = i; bestMask = m; bestCnt = n; if (n === 1) break; }
+      }
+      if (best < 0) { count++; return fill || count >= limit; }
+      const r = ROW[best], c = COL[best], b = BOX[best];
+      const digits = []; for (let d = 1; d <= 9; d++) if (bestMask & (1 << d)) digits.push(d);
+      if (randomize) shuffle(digits);
+      for (const d of digits) {
+        const bit = 1 << d;
+        g[best] = d; R[r] |= bit; C[c] |= bit; B[b] |= bit;
+        if (rec()) { if (!fill) g[best] = 0; return true; }
+        g[best] = 0; R[r] &= ~bit; C[c] &= ~bit; B[b] &= ~bit;
+      }
+      return false;
+    };
+    rec();
+    return count;
+  }
+
+  function combos(arr, k, fn) {
+    const pick = [];
+    const rec = start => {
+      if (pick.length === k) return fn(pick);
+      for (let i = start; i <= arr.length - (k - pick.length); i++) {
+        pick.push(arr[i]);
+        if (rec(i + 1)) return true;
+        pick.pop();
+      }
+      return false;
+    };
+    return rec(0);
+  }
+
+  // 사람이 쓰는 기법 순서대로 풀어 보고, 필요했던 가장 어려운 기법 단계를 반환한다.
+  // 1: 싱글 · 2: 교차·페어 · 3: 트리플·X-Wing · 4: 쿼드·Swordfish·XY-Wing · 5: 기법으로 풀리지 않음
+  function grade(puzzle) {
+    const v = Array.from(puzzle);
+    const cand = new Uint16Array(81);
+    let left = 0;
+    for (let i = 0; i < 81; i++) if (!v[i]) { cand[i] = 0x3FE; left++; }
+    for (let i = 0; i < 81; i++) if (v[i]) for (const p of PEERS[i]) cand[p] &= ~(1 << v[i]);
+
+    const place = (i, d) => { v[i] = d; cand[i] = 0; left--; for (const p of PEERS[i]) cand[p] &= ~(1 << d); };
+    const elim = (i, mask) => { if (!v[i] && (cand[i] & mask)) { cand[i] &= ~mask; return true; } return false; };
+
+    function singles() {
+      for (let i = 0; i < 81; i++) if (!v[i] && POP[cand[i]] === 1) { place(i, lowDigit(cand[i])); return true; }
+      for (const u of UNITS) {
+        for (let d = 1; d <= 9; d++) {
+          const bit = 1 << d; let pos = -1, n = 0, placed = false;
+          for (const i of u) { if (v[i] === d) { placed = true; break; } if (cand[i] & bit) { pos = i; n++; } }
+          if (!placed && n === 1) { place(pos, d); return true; }
+        }
+      }
+      return false;
+    }
+
+    function locked() {
+      for (let b = 0; b < 9; b++) {
+        for (let d = 1; d <= 9; d++) {
+          const bit = 1 << d; let rows = 0, cols = 0, n = 0;
+          for (const i of BOXES[b]) if (cand[i] & bit) { rows |= 1 << ROW[i]; cols |= 1 << COL[i]; n++; }
+          if (n < 2) continue;
+          let ch = false;
+          if (POP[rows] === 1) { const r = lowDigit(rows); for (const i of ROWS[r]) if (BOX[i] !== b) ch = elim(i, bit) || ch; }
+          if (POP[cols] === 1) { const c = lowDigit(cols); for (const i of COLS[c]) if (BOX[i] !== b) ch = elim(i, bit) || ch; }
+          if (ch) return true;
+        }
+      }
+      for (const lines of [ROWS, COLS]) {
+        for (const line of lines) {
+          for (let d = 1; d <= 9; d++) {
+            const bit = 1 << d; let boxes = 0, n = 0;
+            for (const i of line) if (cand[i] & bit) { boxes |= 1 << BOX[i]; n++; }
+            if (n < 2 || POP[boxes] !== 1) continue;
+            const b = lowDigit(boxes); let ch = false;
+            for (const i of BOXES[b]) if (!line.includes(i)) ch = elim(i, bit) || ch;
+            if (ch) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function nakedSubset(k) {
+      for (const u of UNITS) {
+        const open = u.filter(i => !v[i] && POP[cand[i]] >= 2 && POP[cand[i]] <= k);
+        if (open.length < k) continue;
+        const hit = combos(open, k, pick => {
+          let union = 0; for (const i of pick) union |= cand[i];
+          if (POP[union] !== k) return false;
+          let ch = false;
+          for (const i of u) if (!pick.includes(i)) ch = elim(i, union) || ch;
+          return ch;
+        });
+        if (hit) return true;
+      }
+      return false;
+    }
+
+    function hiddenSubset(k) {
+      for (const u of UNITS) {
+        const ds = [], posOf = {};
+        for (let d = 1; d <= 9; d++) {
+          const bit = 1 << d; let pos = 0, placed = false;
+          for (let j = 0; j < 9; j++) { const i = u[j]; if (v[i] === d) { placed = true; break; } if (cand[i] & bit) pos |= 1 << j; }
+          if (!placed && POP[pos] >= 2 && POP[pos] <= k) { ds.push(d); posOf[d] = pos; }
+        }
+        if (ds.length < k) continue;
+        const hit = combos(ds, k, pick => {
+          let pos = 0, dm = 0; for (const d of pick) { pos |= posOf[d]; dm |= 1 << d; }
+          if (POP[pos] !== k) return false;
+          let ch = false;
+          for (let j = 0; j < 9; j++) if (pos & (1 << j)) ch = elim(u[j], 0x3FE & ~dm) || ch;
+          return ch;
+        });
+        if (hit) return true;
+      }
+      return false;
+    }
+
+    function fish(k) {
+      for (let d = 1; d <= 9; d++) {
+        const bit = 1 << d;
+        for (const [base, cover] of [[ROWS, COLS], [COLS, ROWS]]) {
+          const lines = [], posOf = [];
+          for (let l = 0; l < 9; l++) {
+            let pos = 0; for (let j = 0; j < 9; j++) if (cand[base[l][j]] & bit) pos |= 1 << j;
+            if (POP[pos] >= 2 && POP[pos] <= k) { lines.push(l); posOf[l] = pos; }
+          }
+          if (lines.length < k) continue;
+          const hit = combos(lines, k, pick => {
+            let pos = 0; for (const l of pick) pos |= posOf[l];
+            if (POP[pos] !== k) return false;
+            let ch = false;
+            for (let j = 0; j < 9; j++) {
+              if (!(pos & (1 << j))) continue;
+              for (let l = 0; l < 9; l++) if (!pick.includes(l)) ch = elim(cover[j][l], bit) || ch;
+            }
+            return ch;
+          });
+          if (hit) return true;
+        }
+      }
+      return false;
+    }
+
+    function xyWing() {
+      for (let p = 0; p < 81; p++) {
+        if (v[p] || POP[cand[p]] !== 2) continue;
+        const pm = cand[p];
+        const wings = PEERS[p].filter(i => !v[i] && POP[cand[i]] === 2 && cand[i] !== pm && POP[cand[i] & pm] === 1);
+        for (const a of wings) {
+          const z = cand[a] & ~pm, y = pm & ~cand[a];
+          for (const b of wings) {
+            if (b === a || cand[b] !== (y | z)) continue;
+            let ch = false;
+            for (const i of PEERS[a]) if (i !== b && i !== p && IS_PEER[i * 81 + b]) ch = elim(i, z) || ch;
+            if (ch) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    let max = 1;
+    while (left > 0) {
+      if (singles()) continue;
+      if (locked() || nakedSubset(2) || hiddenSubset(2)) { if (max < 2) max = 2; continue; }
+      if (nakedSubset(3) || hiddenSubset(3) || fish(2)) { if (max < 3) max = 3; continue; }
+      if (nakedSubset(4) || hiddenSubset(4) || fish(3) || xyWing()) { if (max < 4) max = 4; continue; }
+      return 5;
+    }
+    return max;
+  }
+
+  // cfg: { tech: 목표 기법 단계, givens: 남길 숫자 수 상한(없으면 최대한 지움) }
+  function generate(cfg, budgetMs) {
+    const t0 = Date.now();
+    let best = null, tries = 0;
+    do {
+      tries++;
+      const solution = new Array(81).fill(0);
+      solve(solution, 1, true, true);
+      const p = solution.slice();
+      let givens = 81;
+      for (const i of shuffle([...Array(81).keys()])) {
+        if (cfg.givens && givens <= cfg.givens) break;
+        const keep = p[i]; p[i] = 0;
+        if (solve(p.slice(), 2, false, false) !== 1 || (cfg.tech < 5 && grade(p) > cfg.tech)) { p[i] = keep; continue; }
+        givens--;
+      }
+      const tech = grade(p);
+      const res = { puzzle: p, solution, tech, givens, tries };
+      if (tech === cfg.tech) return res;
+      if (!best || Math.abs(tech - cfg.tech) < Math.abs(best.tech - cfg.tech)) best = res;
+    } while (Date.now() - t0 < budgetMs);
+    best.tries = tries;
+    return best;
+  }
+
+  return { generate, grade };
+}
+</script>
+
+<script>
+(() => {
+  // tech: 풀 때 필요한 가장 어려운 기법 단계 (판정기 기준), givens: 처음 보이는 숫자 수 (없으면 정답이 하나로 유지되는 한 최대한 지움)
+  const LEVELS = [
+    { label: '입문', tech: 1, givens: 46, desc: '빈칸 대부분이 바로 채워져요. 규칙을 익히기 좋아요.' },
+    { label: '쉬움', tech: 1, givens: 38, desc: '한 줄, 한 박스씩 확인하면 막힘 없이 풀려요.' },
+    { label: '보통', tech: 1, givens: 30, desc: '들어갈 자리가 하나뿐인 숫자를 찾는 기본 추론만으로 끝까지 풀려요.' },
+    { label: '어려움', tech: 2, desc: '후보 숫자를 메모하고, 박스와 줄이 겹치는 자리나 숫자 짝을 찾아야 해요.' },
+    { label: '전문가', tech: 3, desc: '세 칸 묶음이나 X-Wing 같은 패턴을 찾아야 풀려요.' },
+    { label: '마스터', tech: 4, desc: 'Swordfish, XY-Wing 같은 고급 패턴이 필요해요.' },
+    { label: '극한', tech: 5, desc: '알려진 패턴만으로는 막혀요. 숫자를 가정해 보고 모순을 확인하며 풀어야 해요.' },
+  ];
+  const HINTS = 3;
+  const KEY = 'classic-sudoku-v1';
+  const Gen = SudokuGenFactory();
+  let worker = null;
+  try {
+    const src = 'const G = (' + SudokuGenFactory.toString() + ')();\nonmessage = e => postMessage(G.generate(e.data.cfg, e.data.budget));';
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  } catch (e) { worker = null; }
+  const cfgOf = level => ({ tech: LEVELS[level].tech, givens: LEVELS[level].givens || 0 });
+  function generateAsync(level) {
+    const msg = { cfg: cfgOf(level), budget: 5000 };
+    const local = () => Gen.generate(msg.cfg, msg.budget);
+    if (!worker) return new Promise(res => setTimeout(() => res(local()), 30));
+    return new Promise(res => {
+      const w = worker;
+      const done = () => { w.removeEventListener('message', onMsg); w.removeEventListener('error', onErr); };
+      const onMsg = e => { done(); res(e.data); };
+      const onErr = () => { done(); worker = null; res(local()); };
+      w.addEventListener('message', onMsg); w.addEventListener('error', onErr);
+      w.postMessage(msg);
+    });
+  }
+
+  // 각 칸의 같은 행·열·박스 칸 목록
+  const PEERS = [];
+  for (let i = 0; i < 81; i++) {
+    const r = Math.floor(i / 9), c = i % 9, br = r - r % 3, bc = c - c % 3, s = new Set();
+    for (let k = 0; k < 9; k++) { s.add(r * 9 + k); s.add(k * 9 + c); s.add((br + Math.floor(k / 3)) * 9 + bc + k % 3); }
+    s.delete(i); PEERS.push([...s]);
+  }
+
+  // 상태
+  let S;
+  const fresh = (level, gen) => {
+    const { puzzle, solution } = gen;
+    return { level, tech: gen.tech, puzzle, solution, values: puzzle.slice(), notes: new Array(81).fill(0), hinted: new Array(81).fill(false),
+      mistakes: 0, seconds: 0, hintsLeft: HINTS, done: false, sel: puzzle.indexOf(0), history: [] };
+  };
+  const save = () => { try { const { history, ...rest } = S; localStorage.setItem(KEY, JSON.stringify(rest)); } catch (e) {} };
+  const load = () => {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (!s || !s.puzzle || s.puzzle.length !== 81) return null;
+      if (typeof s.level !== 'number') s.level = { easy: 1, medium: 2, hard: 3 }[s.diff] ?? 2; // 3단계 시절 저장본
+      return { ...s, history: [] };
+    } catch (e) { return null; }
+  };
+  let noteMode = false;
+  let busy = false, busyLevel = 0;
+
+  // 난이도 버튼: 단계가 오를수록 막대가 하나씩 켜진다
+  const levelBox = document.getElementById('levels');
+  const levelBtns = LEVELS.map((lv, idx) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'lv-' + idx;
+    let pips = '<span class="pips" aria-hidden="true">';
+    for (let k = 0; k < 7; k++) pips += '<i class="' + (k <= idx ? 'on' : '') + '" style="height:' + (2 + k) + 'px"></i>';
+    b.innerHTML = pips + '</span>' + lv.label;
+    b.setAttribute('aria-label', (idx + 1) + '단계 ' + lv.label);
+    b.addEventListener('click', () => requestNew(idx));
+    levelBox.appendChild(b);
+    return b;
+  });
+
+  // DOM 구성
+  const board = document.getElementById('board');
+  const cells = [];
+  for (let i = 0; i < 81; i++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'cell-' + i;
+    b.className = 'cell c' + (i % 9) + ' r' + Math.floor(i / 9);
+    b.setAttribute('role', 'gridcell');
+    b.addEventListener('click', () => { S.sel = i; render(); });
+    board.appendChild(b); cells.push(b);
+  }
+  const pad = document.getElementById('pad');
+  const keys = [];
+  for (let d = 1; d <= 9; d++) {
+    const k = document.createElement('button');
+    k.type = 'button'; k.className = 'key'; k.id = 'key-' + d;
+    k.innerHTML = d + '<small></small>';
+    k.addEventListener('click', () => input(d));
+    pad.appendChild(k); keys.push(k);
+  }
+
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+
+  function render() {
+    const sel = S.sel, selVal = sel >= 0 ? S.values[sel] : 0;
+    const peerSet = new Set(sel >= 0 ? PEERS[sel] : []);
+    for (let i = 0; i < 81; i++) {
+      const el = cells[i], v = S.values[i], given = S.puzzle[i] !== 0;
+      const err = v && !given && v !== S.solution[i];
+      el.classList.toggle('given', given);
+      el.classList.toggle('entered', !given && !!v && !S.hinted[i]);
+      el.classList.toggle('hinted', !given && !!v && S.hinted[i]);
+      el.classList.toggle('err', !!err);
+      el.classList.toggle('sel', i === sel);
+      el.classList.toggle('same', i !== sel && !!selVal && v === selVal);
+      el.classList.toggle('peer', i !== sel && peerSet.has(i) && !(selVal && v === selVal));
+      if (v) { el.textContent = v; }
+      else if (S.notes[i]) {
+        let h = '<span class="notes">';
+        for (let d = 1; d <= 9; d++) h += '<span' + (selVal === d ? ' class="hl"' : '') + '>' + ((S.notes[i] >> d) & 1 ? d : '') + '</span>';
+        el.innerHTML = h + '</span>';
+      } else el.textContent = '';
+      const r = Math.floor(i / 9) + 1, c = i % 9 + 1;
+      el.setAttribute('aria-label', r + '행 ' + c + '열 ' + (v ? v : '빈 칸'));
+    }
+    const counts = new Array(10).fill(0);
+    S.values.forEach((v, i) => { if (v && v === S.solution[i]) counts[v]++; });
+    keys.forEach((k, idx) => { const left = 9 - counts[idx + 1]; k.querySelector('small').textContent = left || ''; k.classList.toggle('done', left === 0); });
+    document.getElementById('mistakes').textContent = S.mistakes;
+    document.getElementById('time').textContent = fmt(S.seconds);
+    document.getElementById('hintBadge').textContent = S.hintsLeft;
+    document.getElementById('noteBtn').setAttribute('aria-pressed', noteMode);
+    document.getElementById('noteBadge').textContent = noteMode ? 'ON' : 'OFF';
+    const shown = busy ? busyLevel : S.level;
+    levelBtns.forEach((b, idx) => b.setAttribute('aria-pressed', idx === shown));
+    document.getElementById('lvlDesc').innerHTML = '<b>' + (shown + 1) + '단계 ' + LEVELS[shown].label + '</b> · ' + LEVELS[shown].desc;
+    document.getElementById('busy').hidden = !busy;
+    if (busy) document.getElementById('busyText').textContent = LEVELS[busyLevel].label + ' 문제를 만드는 중이에요';
+    const win = document.getElementById('win');
+    win.hidden = !S.done || busy;
+    if (S.done) document.getElementById('winText').textContent =
+      LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + S.mistakes + '회 · 힌트 ' + (HINTS - S.hintsLeft) + '회';
+  }
+
+  const snapshot = () => { S.history.push({ values: S.values.slice(), notes: S.notes.slice(), hinted: S.hinted.slice() }); if (S.history.length > 200) S.history.shift(); };
+  const editable = i => !busy && i >= 0 && !S.done && S.puzzle[i] === 0 && !S.hinted[i];
+
+  function place(i, d) {
+    S.values[i] = d; S.notes[i] = 0;
+    if (d === S.solution[i]) PEERS[i].forEach(p => { S.notes[p] &= ~(1 << d); });
+    else S.mistakes++;
+    if (S.values.every((v, k) => v === S.solution[k])) S.done = true;
+  }
+
+  function input(d) {
+    const i = S.sel; if (!editable(i)) return;
+    if (noteMode) {
+      if (S.values[i]) return;
+      snapshot(); S.notes[i] ^= (1 << d);
+    } else {
+      if (S.values[i] === d) return;
+      snapshot(); place(i, d);
+    }
+    save(); render();
+  }
+  function erase() {
+    const i = S.sel; if (!editable(i) || (!S.values[i] && !S.notes[i])) return;
+    snapshot(); S.values[i] = 0; S.notes[i] = 0; save(); render();
+  }
+  function undo() {
+    if (S.done || busy) return;
+    const h = S.history.pop(); if (!h) return;
+    S.values = h.values; S.notes = h.notes; S.hinted = h.hinted; save(); render();
+  }
+  function hint() {
+    if (S.done || busy || S.hintsLeft <= 0) return;
+    let i = S.sel;
+    if (!(i >= 0 && S.puzzle[i] === 0 && S.values[i] !== S.solution[i])) {
+      const open = []; for (let k = 0; k < 81; k++) if (S.values[k] !== S.solution[k]) open.push(k);
+      if (!open.length) return; i = open[Math.floor(Math.random() * open.length)];
+    }
+    snapshot(); S.hinted[i] = true; S.hintsLeft--; S.sel = i;
+    const before = S.mistakes; place(i, S.solution[i]); S.mistakes = before;
+    save(); render();
+  }
+
+  // 새 게임 (진행 중이면 확인 줄 표시)
+  let pendingLevel = null;
+  const confirmBox = document.getElementById('confirm');
+  const inProgress = () => !S.done && S.values.some((v, i) => v && S.puzzle[i] === 0);
+  function requestNew(level) {
+    if (busy) return;
+    if (inProgress()) { pendingLevel = level; document.getElementById('confirmText').textContent = LEVELS[level].label + ' 난이도로 새로 시작할까요? 지금 게임은 사라집니다.'; confirmBox.hidden = false; }
+    else startNew(level);
+  }
+  async function startNew(level) {
+    if (busy) return;
+    confirmBox.hidden = true; pendingLevel = null;
+    busy = true; busyLevel = level; render();
+    const gen = await generateAsync(level);
+    S = fresh(level, gen); busy = false; save(); render();
+  }
+
+  document.getElementById('newBtn').addEventListener('click', () => requestNew(S.level));
+  document.getElementById('winNew').addEventListener('click', () => startNew(S.level));
+  document.getElementById('confirmYes').addEventListener('click', () => startNew(pendingLevel ?? S.level));
+  document.getElementById('confirmNo').addEventListener('click', () => { confirmBox.hidden = true; pendingLevel = null; });
+  document.getElementById('undoBtn').addEventListener('click', undo);
+  document.getElementById('eraseBtn').addEventListener('click', erase);
+  document.getElementById('hintBtn').addEventListener('click', hint);
+  document.getElementById('noteBtn').addEventListener('click', () => { noteMode = !noteMode; render(); });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^[1-9]$/.test(e.key)) { input(+e.key); return; }
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { erase(); return; }
+    if (e.key.toLowerCase() === 'n') { noteMode = !noteMode; render(); return; }
+    const mv = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (mv !== undefined) {
+      e.preventDefault();
+      let i = S.sel < 0 ? 0 : S.sel, r = Math.floor(i / 9), c = i % 9;
+      if (mv === -9) r = (r + 8) % 9; if (mv === 9) r = (r + 1) % 9;
+      if (mv === -1) c = (c + 8) % 9; if (mv === 1) c = (c + 1) % 9;
+      S.sel = r * 9 + c; render(); cells[S.sel].focus();
+    }
+  });
+
+  // 타이머: 화면이 보일 때만 진행
+  setInterval(() => {
+    if (!S.done && !busy && document.visibilityState === 'visible') {
+      S.seconds++; document.getElementById('time').textContent = fmt(S.seconds);
+      if (S.seconds % 5 === 0) save();
+    }
+  }, 1000);
+
+  S = load() || fresh(2, Gen.generate(cfgOf(2), 0));
+  render();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
