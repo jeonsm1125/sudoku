@@ -61,30 +61,66 @@ img { max-width: 100%; }
   --accent-soft: #263257; --peer: #1F2733; --same: #31406A; --error: #FF7B72;
   --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
 }
-html, body { height: 100%; }
+html { box-sizing: border-box; height: 100%; }
 body {
+  height: 100%; box-sizing: border-box;
   background: var(--bg); color: var(--ink); font-family: var(--font-body);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 20px 28px;
+  padding-block: 0;
   -webkit-tap-highlight-color: transparent;
 }
-.app { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: 2rem; margin: 0; letter-spacing: -0.02em; }
+h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spacing: .08em; margin-left: 8px; }
 
-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; margin: 0; letter-spacing: -0.02em; }
-h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spacing: .08em; margin-left: 6px; }
+/* 난이도 막대: 단계가 오를수록 하나씩 켜진다 */
+.pips { display: inline-flex; gap: 2px; align-items: flex-end; height: 10px; }
+.pips i { width: 3px; border-radius: 1px; background: currentColor; opacity: .22; }
+.pips i.on { opacity: .9; }
 
-.levels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
-.levels button {
-  border: 0; background: transparent; color: var(--muted); font: 600 .78rem var(--font-body);
-  padding: 6px 0 7px; border-radius: 9px; cursor: pointer; white-space: nowrap;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
+/* 시작 화면 */
+.home { max-width: 480px; margin: 0 auto; padding-block: 28px 32px; display: flex; flex-direction: column; gap: 12px; }
+.home-head { margin-bottom: 6px; }
+.continue {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+  border: 0; border-radius: 14px; padding: 16px 18px; background: var(--accent); color: var(--accent-ink); font: inherit;
 }
-.levels .pips { display: flex; gap: 2px; align-items: flex-end; height: 8px; }
-.levels .pips i { width: 3px; border-radius: 1px; background: currentColor; opacity: .25; }
-.levels .pips i.on { opacity: .9; }
-.levels button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.continue .c-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.continue b { font: 800 1.05rem var(--font-display); }
+.continue small { font: 400 .82rem var(--font-digit); opacity: .85; font-variant-numeric: tabular-nums; }
+.continue svg, .lv-row svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.section-label { margin: 10px 0 0; font-size: .75rem; font-weight: 600; color: var(--muted); letter-spacing: .08em; }
+.level-list { display: flex; flex-direction: column; gap: 8px; }
+.lv-row {
+  display: grid; grid-template-columns: 34px 1fr auto 20px; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 13px 14px 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer;
+}
+.lv-row:hover { border-color: var(--accent); }
+.lv-row:active { background: var(--accent-soft); }
+.lv-row .pips { height: 14px; gap: 2px; }
+.lv-row .pips i { width: 3px; }
+.lv-row svg { color: var(--muted); width: 18px; height: 18px; }
+.lv-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lv-name b { font: 800 1.05rem var(--font-display); }
+.lv-name small { font-size: .75rem; color: var(--muted); }
+.lv-best { font: 400 .72rem var(--font-body); color: var(--muted); text-align: right; white-space: nowrap; }
+.lv-best b { display: block; font: 400 .95rem var(--font-digit); color: var(--ink); font-variant-numeric: tabular-nums; }
+.continue:focus-visible, .lv-row:focus-visible, .backbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 게임 화면: 화면 높이에 맞춰 판 크기를 정해 스크롤 없이 한 화면에 들어오게 한다 */
+.game { max-width: 520px; margin: 0 auto; height: 100%; box-sizing: border-box; padding-block: 8px 12px; display: flex; flex-direction: column; gap: 10px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.backbtn {
+  display: inline-flex; align-items: center; gap: 2px; border: 0; background: none; color: var(--ink);
+  font: 600 .95rem var(--font-body); padding: 6px 8px 6px 0; cursor: pointer; border-radius: 8px;
+}
+.backbtn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.lvl-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 700 .88rem var(--font-body); }
+.board-area { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; container-type: size; }
+.win-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.btn-ghost { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 .95rem var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; }
+.btn-primary:focus-visible, .btn-ghost:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pausebtn { border: 0; background: none; color: var(--ink); cursor: pointer; padding: 2px; margin-left: 4px; border-radius: 6px; display: inline-grid; place-items: center; vertical-align: middle; }
 .pausebtn svg { width: 18px; height: 18px; fill: currentColor; }
 .pausebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -108,17 +144,18 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .confirm button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 .85rem var(--font-body); padding: 6px 12px; border-radius: 8px; cursor: pointer; }
 .confirm button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
-.board-wrap { position: relative; }
+.board-wrap { position: relative; width: 100%; container-type: inline-size; }
+@supports (width: 1cqh) { .board-wrap { width: min(100cqw, 100cqh); } }
 .board {
-  display: grid; grid-template-columns: repeat(9, 1fr); aspect-ratio: 1; width: 100%; max-width: 100%;
+  display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); aspect-ratio: 1; width: 100%; max-width: 100%;
   background: var(--surface); border: 3px solid var(--grid-thick); border-radius: 6px; overflow: hidden;
   user-select: none;
 }
 .cell {
   position: relative; border: 0; margin: 0; padding: 0; background: var(--surface); color: var(--ink);
   border-right: 1px solid var(--grid-thin); border-bottom: 1px solid var(--grid-thin);
-  font-family: var(--font-digit); font-size: clamp(1.2rem, 5.6vw, 1.75rem); font-weight: 300;
-  display: grid; place-items: center; cursor: pointer; aspect-ratio: 1;
+  font-family: var(--font-digit); font-size: clamp(1.2rem, 5.6vw, 1.75rem); font-size: 6.4cqw; font-weight: 300;
+  display: grid; place-items: center; cursor: pointer; min-width: 0; min-height: 0;
 }
 .cell:nth-child(9n) { border-right: 0; }
 .cell.c2, .cell.c5 { border-right: 3px solid var(--grid-thick); }
@@ -134,7 +171,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .cell.err { color: var(--error); background: var(--error-soft); }
 .cell.sel.err { box-shadow: inset 0 0 0 2px var(--error); }
 .notes { position: absolute; inset: 2px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
-.notes span { display: grid; place-items: center; font-size: clamp(.5rem, 2.2vw, .7rem); color: var(--muted); font-weight: 400; line-height: 1; }
+.notes span { display: grid; place-items: center; font-size: clamp(.5rem, 2.2vw, .7rem); font-size: 2.5cqw; color: var(--muted); font-weight: 400; line-height: 1; }
 .notes span.hl { color: var(--accent); font-weight: 600; }
 
 .overlay {
@@ -151,7 +188,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 }
 .tool svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tool:hover { background: var(--surface); }
-.tool:focus-visible, .key:focus-visible, .levels button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tool:focus-visible, .key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tool .badge { font: 600 .65rem var(--font-body); padding: 1px 6px; border-radius: 999px; background: var(--line); color: var(--muted); }
 .tool[aria-pressed="true"] { color: var(--accent); }
 .tool[aria-pressed="true"] .badge { background: var(--accent); color: var(--accent-ink); }
@@ -160,7 +197,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .key {
   border: 1px solid var(--line); background: var(--surface); color: var(--accent); border-radius: 10px;
   font-family: var(--font-digit); font-size: clamp(1.2rem, 5.4vw, 1.6rem); font-weight: 400;
-  padding: 8px 0 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 6px 0 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1px;
 }
 .key small { font-size: .6rem; color: var(--muted); font-family: var(--font-body); }
 .key:active { background: var(--accent-soft); }
@@ -170,7 +207,8 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 .btn-primary { border: 0; background: var(--accent); color: var(--accent-ink); font: 600 .95rem var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; }
 .help { font-size: .78rem; color: var(--muted); text-align: center; line-height: 1.6; margin: 0; }
 .help kbd { font-family: var(--font-digit); font-size: .72rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--surface); }
-@media (hover: none) { .help { display: none; } }
+.help { display: none; }
+@media (hover: hover) and (pointer: fine) { .help { display: block; } }
 .ver { font: 400 .7rem var(--font-digit); color: var(--muted); text-align: center; margin: 0; opacity: .7; }
 @media (prefers-reduced-motion: no-preference) {
   .cell { transition: background-color .12s ease; }
@@ -181,49 +219,71 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
 
 </head>
 <body>
-<div class="app">
-  <header>
+<main class="home" id="home">
+  <header class="home-head">
     <h1>스도쿠<small>SUDOKU</small></h1>
   </header>
 
-  <div class="levels" id="levels" role="group" aria-label="난이도"></div>
+  <button type="button" class="continue" id="continueBtn" hidden>
+    <span class="c-text"><b>이어하기</b><small id="continueMeta"></small></span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+  </button>
+
+  <div class="confirm" id="confirm" hidden>
+    <span id="confirmText"></span>
+    <div class="btns">
+      <button type="button" id="confirmNo">취소</button>
+      <button type="button" class="primary" id="confirmYes">새로 시작</button>
+    </div>
+  </div>
+
+  <p class="section-label">난이도</p>
+  <div class="level-list" id="levelList"></div>
+
+  <p class="help"><kbd>1</kbd>–<kbd>9</kbd> 입력 · <kbd>←↑→↓</kbd> 이동 · <kbd>Backspace</kbd> 지우기 · <kbd>N</kbd> 메모 · <kbd>P</kbd> 일시정지 · <kbd>Ctrl</kbd>+<kbd>Z</kbd> 되돌리기 · <kbd>Esc</kbd> 목록</p>
+  <p class="ver" id="ver"></p>
+</main>
+
+<main class="game" id="game" hidden>
+  <div class="topbar">
+    <button type="button" class="backbtn" id="backBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>목록
+    </button>
+    <span class="lvl-chip"><span class="pips" id="lvlPips" aria-hidden="true"></span><span id="lvlName"></span></span>
+  </div>
 
   <div class="status">
     <div class="grp">
       <span>시간<b id="time">00:00</b><button type="button" class="pausebtn" id="pauseBtn" aria-label="일시정지"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button></span>
       <span>실수<b id="mistakes">0</b></span>
     </div>
-    <button type="button" class="linkbtn" id="newBtn">새 게임</button>
   </div>
 
-  <div class="confirm" id="confirm" hidden>
-    <span id="confirmText">진행 중인 게임을 그만두고 새로 시작할까요?</span>
-    <div class="btns">
-      <button type="button" id="confirmNo">계속하기</button>
-      <button type="button" class="primary" id="confirmYes">새로 시작</button>
-    </div>
-  </div>
-
-  <div class="board-wrap">
-    <div class="board" id="board" role="grid" aria-label="스도쿠 판"></div>
-    <div class="overlay" id="win" hidden>
-      <div>
-        <h2>완성했어요</h2>
-        <p id="winText"></p>
-        <button type="button" class="btn-primary" id="winNew">새 게임</button>
+  <div class="board-area">
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="스도쿠 판"></div>
+      <div class="overlay" id="win" hidden>
+        <div>
+          <h2>완성했어요</h2>
+          <p id="winText"></p>
+          <div class="win-btns">
+            <button type="button" class="btn-primary" id="winNew">한 판 더</button>
+            <button type="button" class="btn-ghost" id="winHome">목록으로</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="overlay pause-pop" id="pausedBox" hidden>
-      <div class="pause-card">
-        <h2>일시정지</h2>
-        <p id="pausedText"></p>
-        <button type="button" class="btn-primary" id="resumeBtn">계속하기</button>
+      <div class="overlay pause-pop" id="pausedBox" hidden>
+        <div class="pause-card">
+          <h2>일시정지</h2>
+          <p id="pausedText"></p>
+          <button type="button" class="btn-primary" id="resumeBtn">계속하기</button>
+        </div>
       </div>
-    </div>
-    <div class="overlay" id="busy" hidden>
-      <div>
-        <div class="spinner"></div>
-        <p id="busyText">문제를 만드는 중이에요</p>
+      <div class="overlay" id="busy" hidden>
+        <div>
+          <div class="spinner"></div>
+          <p id="busyText">문제를 만드는 중이에요</p>
+        </div>
       </div>
     </div>
   </div>
@@ -246,10 +306,7 @@ h1 small { font-weight: 400; font-size: .8rem; color: var(--muted); letter-spaci
   </div>
 
   <div class="pad" id="pad"></div>
-
-  <p class="help"><kbd>1</kbd>–<kbd>9</kbd> 입력 · <kbd>←↑→↓</kbd> 이동 · <kbd>Backspace</kbd> 지우기 · <kbd>N</kbd> 메모 · <kbd>P</kbd> 일시정지 · <kbd>Ctrl</kbd>+<kbd>Z</kbd> 되돌리기</p>
-  <p class="ver" id="ver"></p>
-</div>
+</main>
 
 <script>
 /* 문제 생성기와 기법 기반 난이도 판정기. Web Worker 에도 같은 소스를 넘긴다. */
@@ -506,8 +563,10 @@ function SudokuGenFactory() {
     { label: '극한', tech: 5 },     // 위 기법으로 풀리지 않음
   ];
   const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>';
+  const CHEVRON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
   const HINTS = 3;
   const KEY = 'classic-sudoku-v1';
+  const STATS_KEY = 'classic-sudoku-stats';
   const Gen = SudokuGenFactory();
   let worker = null;
   try {
@@ -537,63 +596,102 @@ function SudokuGenFactory() {
     s.delete(i); PEERS.push([...s]);
   }
 
-  // 상태
-  let S;
+  // 상태 (저장된 게임이 없으면 null)
+  let S = null;
   const fresh = (level, gen) => {
     const { puzzle, solution } = gen;
     return { level, tech: gen.tech, puzzle, solution, values: puzzle.slice(), notes: new Array(81).fill(0), hinted: new Array(81).fill(false),
-      mistakes: 0, seconds: 0, hintsLeft: HINTS, done: false, sel: puzzle.indexOf(0), history: [] };
+      mistakes: 0, seconds: 0, hintsLeft: HINTS, done: false, paused: false, sel: puzzle.indexOf(0), history: [] };
   };
-  const save = () => { try { const { history, ...rest } = S; localStorage.setItem(KEY, JSON.stringify(rest)); } catch (e) {} };
+  const blank = level => fresh(level, { puzzle: new Array(81).fill(0), solution: new Array(81).fill(0), tech: 0 });
+  const save = () => { if (!S || busy) return; try { const { history, ...rest } = S; localStorage.setItem(KEY, JSON.stringify(rest)); } catch (e) {} };
   const load = () => {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
-      if (!s || !s.puzzle || s.puzzle.length !== 81) return null;
+      if (!s || !s.puzzle || s.puzzle.length !== 81 || !s.solution.some(Boolean)) return null;
       if (typeof s.level !== 'number') s.level = { easy: 1, medium: 2, hard: 3 }[s.diff] ?? 2; // 3단계 시절 저장본
       return { ...s, history: [] };
     } catch (e) { return null; }
   };
+  const loadStats = () => { try { const t = JSON.parse(localStorage.getItem(STATS_KEY)); if (t && t.best && t.solved) return t; } catch (e) {} return { best: {}, solved: {} }; };
+  const saveStats = t => { try { localStorage.setItem(STATS_KEY, JSON.stringify(t)); } catch (e) {} };
   let noteMode = false;
   let busy = false, busyLevel = 0;
+  let screen = 'home';
+  let lastWinBest = false;
 
-  // 난이도 버튼: 단계가 오를수록 막대가 하나씩 켜진다
-  const levelBox = document.getElementById('levels');
-  const levelBtns = LEVELS.map((lv, idx) => {
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  const pipsHtml = idx => { let h = ''; for (let k = 0; k < 7; k++) h += '<i class="' + (k <= idx ? 'on' : '') + '" style="height:' + (40 + k * 10) + '%"></i>'; return h; };
+  const $ = id => document.getElementById(id);
+
+  // 시작 화면: 난이도 목록
+  const levelRows = LEVELS.map((lv, idx) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.id = 'lv-' + idx;
-    let pips = '<span class="pips" aria-hidden="true">';
-    for (let k = 0; k < 7; k++) pips += '<i class="' + (k <= idx ? 'on' : '') + '" style="height:' + (2 + k) + 'px"></i>';
-    b.innerHTML = pips + '</span>' + lv.label;
-    b.setAttribute('aria-label', (idx + 1) + '단계 ' + lv.label);
-    b.addEventListener('click', () => requestNew(idx));
-    levelBox.appendChild(b);
+    b.type = 'button'; b.className = 'lv-row'; b.id = 'lv-' + idx;
+    b.innerHTML = '<span class="pips" aria-hidden="true">' + pipsHtml(idx) + '</span>' +
+      '<span class="lv-name"><b>' + lv.label + '</b><small>' + (idx + 1) + '단계</small></span>' +
+      '<span class="lv-best" id="best-' + idx + '"></span>' + CHEVRON_SVG;
+    b.addEventListener('click', () => chooseLevel(idx));
+    $('levelList').appendChild(b);
     return b;
   });
 
-  // DOM 구성
-  const board = document.getElementById('board');
+  const hasGame = () => !!S && !S.done && !busy && S.solution.some(Boolean);
+  const inProgress = () => hasGame() && (S.seconds > 0 || S.values.some((v, i) => v && S.puzzle[i] === 0));
+
+  function renderHome() {
+    const cont = $('continueBtn');
+    cont.hidden = !inProgress();
+    if (!cont.hidden) $('continueMeta').textContent = LEVELS[S.level].label + ' · ' + fmt(S.seconds) + (S.mistakes ? ' · 실수 ' + S.mistakes : '');
+    const st = loadStats();
+    LEVELS.forEach((lv, idx) => {
+      const best = st.best[idx], n = st.solved[idx] || 0;
+      $('best-' + idx).innerHTML = best != null ? '최고 기록<b>' + fmt(best) + '</b>' : '';
+      levelRows[idx].setAttribute('aria-label', (idx + 1) + '단계 ' + lv.label + (best != null ? ', 최고 기록 ' + fmt(best) + ', ' + n + '판 완성' : ''));
+    });
+  }
+
+  // 화면 전환: 게임 화면은 주소 끝에 #play 를 붙여 폰의 뒤로가기로 목록에 돌아오게 한다
+  function showScreen(name, push = true) {
+    screen = name;
+    $('home').hidden = name !== 'home';
+    $('game').hidden = name !== 'game';
+    if (name === 'game') {
+      if (push && location.hash !== '#play') history.pushState(null, '', '#play');
+      render();
+    } else {
+      $('confirm').hidden = true; pendingLevel = null;
+      renderHome();
+    }
+    window.scrollTo(0, 0);
+  }
+  function goHome() {
+    if (location.hash === '#play') history.back();
+    else showScreen('home', false);
+  }
+  window.addEventListener('popstate', () => { showScreen(location.hash === '#play' && S ? 'game' : 'home', false); });
+
+  // 게임 화면 구성
+  const board = $('board');
   const cells = [];
   for (let i = 0; i < 81; i++) {
     const b = document.createElement('button');
     b.type = 'button'; b.id = 'cell-' + i;
     b.className = 'cell c' + (i % 9) + ' r' + Math.floor(i / 9);
     b.setAttribute('role', 'gridcell');
-    b.addEventListener('click', () => { S.sel = i; render(); });
+    b.addEventListener('click', () => { if (!S || busy) return; S.sel = i; render(); });
     board.appendChild(b); cells.push(b);
   }
-  const pad = document.getElementById('pad');
   const keys = [];
   for (let d = 1; d <= 9; d++) {
     const k = document.createElement('button');
     k.type = 'button'; k.className = 'key'; k.id = 'key-' + d;
-    k.innerHTML = d + '<small></small>';
     k.addEventListener('click', () => input(d));
-    pad.appendChild(k); keys.push(k);
+    $('pad').appendChild(k); keys.push(k);
   }
 
-  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-
   function render() {
+    if (!S) return;
     const sel = S.sel, selVal = sel >= 0 ? S.values[sel] : 0;
     const peerSet = new Set(sel >= 0 ? PEERS[sel] : []);
     for (let i = 0; i < 81; i++) {
@@ -603,9 +701,9 @@ function SudokuGenFactory() {
       el.classList.toggle('entered', !given && !!v && !S.hinted[i]);
       el.classList.toggle('hinted', !given && !!v && S.hinted[i]);
       el.classList.toggle('err', !!err);
-      el.classList.toggle('sel', i === sel);
+      el.classList.toggle('sel', i === sel && !busy);
       el.classList.toggle('same', i !== sel && !!selVal && v === selVal);
-      el.classList.toggle('peer', i !== sel && peerSet.has(i) && !(selVal && v === selVal));
+      el.classList.toggle('peer', i !== sel && !busy && peerSet.has(i) && !(selVal && v === selVal));
       if (v) { el.textContent = v; }
       else if (S.notes[i]) {
         let h = '<span class="notes">';
@@ -625,38 +723,45 @@ function SudokuGenFactory() {
       k.disabled = full;
       k.setAttribute('aria-label', full ? d + ' 완성' : d + ' 입력, ' + left + '개 남음');
     });
+    const shown = busy ? busyLevel : S.level;
+    $('lvlName').textContent = LEVELS[shown].label;
+    $('lvlPips').innerHTML = pipsHtml(shown);
     const showPause = !!S.paused && !S.done && !busy;
     document.querySelector('.board-wrap').classList.toggle('is-paused', showPause);
-    document.getElementById('pausedBox').hidden = !showPause;
-    if (showPause) document.getElementById('pausedText').textContent = LEVELS[S.level].label + ' · ' + fmt(S.seconds);
-    document.getElementById('pauseBtn').hidden = S.done;
-    document.getElementById('mistakes').textContent = S.mistakes;
-    document.getElementById('time').textContent = fmt(S.seconds);
-    document.getElementById('hintBadge').textContent = S.hintsLeft;
-    document.getElementById('noteBtn').setAttribute('aria-pressed', noteMode);
-    document.getElementById('noteBadge').textContent = noteMode ? 'ON' : 'OFF';
-    const shown = busy ? busyLevel : S.level;
-    levelBtns.forEach((b, idx) => b.setAttribute('aria-pressed', idx === shown));
-    document.getElementById('busy').hidden = !busy;
-    if (busy) document.getElementById('busyText').textContent = LEVELS[busyLevel].label + ' 문제를 만드는 중이에요';
-    const win = document.getElementById('win');
-    win.hidden = !S.done || busy;
-    if (S.done) document.getElementById('winText').textContent =
+    $('pausedBox').hidden = !showPause;
+    if (showPause) $('pausedText').textContent = LEVELS[S.level].label + ' · ' + fmt(S.seconds);
+    $('pauseBtn').hidden = S.done;
+    $('mistakes').textContent = S.mistakes;
+    $('time').textContent = fmt(S.seconds);
+    $('hintBadge').textContent = S.hintsLeft;
+    $('noteBtn').setAttribute('aria-pressed', noteMode);
+    $('noteBadge').textContent = noteMode ? 'ON' : 'OFF';
+    $('busy').hidden = !busy;
+    if (busy) $('busyText').textContent = LEVELS[busyLevel].label + ' 문제를 만드는 중이에요';
+    $('win').hidden = !S.done || busy;
+    if (S.done) $('winText').textContent = (lastWinBest ? '최고 기록 · ' : '') +
       LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + S.mistakes + '회 · 힌트 ' + (HINTS - S.hintsLeft) + '회';
   }
 
   const snapshot = () => { S.history.push({ values: S.values.slice(), notes: S.notes.slice(), hinted: S.hinted.slice() }); if (S.history.length > 200) S.history.shift(); };
-  const editable = i => !busy && !S.paused && i >= 0 && !S.done && S.puzzle[i] === 0 && !S.hinted[i];
+  const editable = i => !!S && !busy && !S.paused && i >= 0 && !S.done && S.puzzle[i] === 0 && !S.hinted[i];
 
+  function recordWin() {
+    const st = loadStats(), l = S.level;
+    st.solved[l] = (st.solved[l] || 0) + 1;
+    lastWinBest = st.best[l] == null || S.seconds < st.best[l];
+    if (lastWinBest) st.best[l] = S.seconds;
+    saveStats(st);
+  }
   function place(i, d) {
     S.values[i] = d; S.notes[i] = 0;
     if (d === S.solution[i]) PEERS[i].forEach(p => { S.notes[p] &= ~(1 << d); });
     else S.mistakes++;
-    if (S.values.every((v, k) => v === S.solution[k])) S.done = true;
+    if (S.values.every((v, k) => v === S.solution[k])) { S.done = true; recordWin(); }
   }
 
   function input(d) {
-    const i = S.sel; if (!editable(i)) return;
+    const i = S ? S.sel : -1; if (!editable(i)) return;
     if (noteMode) {
       if (S.values[i]) return;
       snapshot(); S.notes[i] ^= (1 << d);
@@ -667,16 +772,16 @@ function SudokuGenFactory() {
     save(); render();
   }
   function erase() {
-    const i = S.sel; if (!editable(i) || (!S.values[i] && !S.notes[i])) return;
+    const i = S ? S.sel : -1; if (!editable(i) || (!S.values[i] && !S.notes[i])) return;
     snapshot(); S.values[i] = 0; S.notes[i] = 0; save(); render();
   }
   function undo() {
-    if (S.done || busy || S.paused) return;
+    if (!S || S.done || busy || S.paused) return;
     const h = S.history.pop(); if (!h) return;
     S.values = h.values; S.notes = h.notes; S.hinted = h.hinted; save(); render();
   }
   function hint() {
-    if (S.done || busy || S.paused || S.hintsLeft <= 0) return;
+    if (!S || S.done || busy || S.paused || S.hintsLeft <= 0) return;
     let i = S.sel;
     if (!(i >= 0 && S.puzzle[i] === 0 && S.values[i] !== S.solution[i])) {
       const open = []; for (let k = 0; k < 81; k++) if (S.values[k] !== S.solution[k]) open.push(k);
@@ -687,38 +792,47 @@ function SudokuGenFactory() {
     save(); render();
   }
 
-  // 새 게임 (진행 중이면 확인 줄 표시)
+  // 난이도 선택: 진행 중인 게임이 있으면 시작 화면에서 한 번 확인
   let pendingLevel = null;
-  const confirmBox = document.getElementById('confirm');
-  const inProgress = () => !S.done && S.values.some((v, i) => v && S.puzzle[i] === 0);
-  function requestNew(level) {
+  function chooseLevel(level) {
     if (busy) return;
-    if (inProgress()) { pendingLevel = level; document.getElementById('confirmText').textContent = LEVELS[level].label + ' 난이도로 새로 시작할까요? 지금 게임은 사라집니다.'; confirmBox.hidden = false; }
-    else startNew(level);
+    if (inProgress()) {
+      pendingLevel = level;
+      $('confirmText').textContent = '진행 중인 ' + LEVELS[S.level].label + ' 게임은 사라집니다. ' + LEVELS[level].label + ' 난이도로 새로 시작할까요?';
+      $('confirm').hidden = false;
+      $('confirmYes').focus();
+    } else startNew(level);
   }
   async function startNew(level) {
     if (busy) return;
-    confirmBox.hidden = true; pendingLevel = null;
-    busy = true; busyLevel = level; render();
+    $('confirm').hidden = true; pendingLevel = null;
+    lastWinBest = false;
+    S = blank(level); busy = true; busyLevel = level;
+    showScreen('game');
     const gen = await generateAsync(level);
-    S = fresh(level, gen); busy = false; save(); render();
+    S = fresh(level, gen); busy = false; save();
+    if (screen === 'game') render(); else renderHome();
   }
 
-  document.getElementById('newBtn').addEventListener('click', () => requestNew(S.level));
-  document.getElementById('winNew').addEventListener('click', () => startNew(S.level));
-  document.getElementById('confirmYes').addEventListener('click', () => startNew(pendingLevel ?? S.level));
-  document.getElementById('confirmNo').addEventListener('click', () => { confirmBox.hidden = true; pendingLevel = null; });
+  $('continueBtn').addEventListener('click', () => showScreen('game'));
+  $('backBtn').addEventListener('click', goHome);
+  $('winNew').addEventListener('click', () => startNew(S.level));
+  $('winHome').addEventListener('click', goHome);
+  $('confirmYes').addEventListener('click', () => { if (pendingLevel != null) startNew(pendingLevel); });
+  $('confirmNo').addEventListener('click', () => { $('confirm').hidden = true; pendingLevel = null; });
   // 일시정지: 시간을 멈추고 판을 가린다. 앱을 내리거나 탭을 옮기면 자동으로 일시정지
-  function setPaused(p) { if (S.done || busy || !!S.paused === p) return; S.paused = p; save(); render(); }
-  document.getElementById('pauseBtn').addEventListener('click', () => setPaused(true));
-  document.getElementById('resumeBtn').addEventListener('click', () => setPaused(false));
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') setPaused(true); });
-  document.getElementById('undoBtn').addEventListener('click', undo);
-  document.getElementById('eraseBtn').addEventListener('click', erase);
-  document.getElementById('hintBtn').addEventListener('click', hint);
-  document.getElementById('noteBtn').addEventListener('click', () => { noteMode = !noteMode; render(); });
+  function setPaused(p) { if (!S || S.done || busy || !!S.paused === p) return; S.paused = p; save(); render(); }
+  $('pauseBtn').addEventListener('click', () => setPaused(true));
+  $('resumeBtn').addEventListener('click', () => setPaused(false));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && screen === 'game') setPaused(true); });
+  $('undoBtn').addEventListener('click', undo);
+  $('eraseBtn').addEventListener('click', erase);
+  $('hintBtn').addEventListener('click', hint);
+  $('noteBtn').addEventListener('click', () => { noteMode = !noteMode; render(); });
 
   document.addEventListener('keydown', e => {
+    if (screen !== 'game' || !S) return;
+    if (e.key === 'Escape' && !S.paused) { goHome(); return; }
     if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === 'p') { setPaused(!S.paused); return; }
     if (S.paused) { if (e.key === 'Escape' || e.key === 'Enter') setPaused(false); return; }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
@@ -736,21 +850,25 @@ function SudokuGenFactory() {
     }
   });
 
-  // 타이머: 화면이 보일 때만 진행
+  // 타이머: 게임 화면이 보일 때만 진행
   setInterval(() => {
-    if (!S.done && !busy && !S.paused && document.visibilityState === 'visible') {
-      S.seconds++; document.getElementById('time').textContent = fmt(S.seconds);
+    if (screen === 'game' && S && !S.done && !busy && !S.paused && document.visibilityState === 'visible') {
+      S.seconds++; $('time').textContent = fmt(S.seconds);
       if (S.seconds % 5 === 0) save();
     }
   }, 1000);
 
-  S = load() || fresh(2, Gen.generate(cfgOf(2), 0));
-  render();
+  // 시작: 항상 목록부터. 게임 중에 새로고침했다면(#play) 목록 위에 게임 화면을 다시 띄워 뒤로가기가 목록으로 오게 한다
+  S = load();
+  const resumePlay = location.hash === '#play' && hasGame();
+  history.replaceState(null, '', location.pathname + location.search);
+  showScreen('home', false);
+  if (resumePlay) showScreen('game');
 })();
 </script>
 <script>
 // 버전: sw.js 의 CACHE, version.json 과 같은 숫자로 함께 올린다
-const APP_VERSION = 5;
+const APP_VERSION = 6;
 document.getElementById('ver').textContent = '버전 ' + APP_VERSION;
 
 // 서버의 최신 버전을 확인하고, 더 새로우면 저장된 파일을 지우고 새로 불러온다.
