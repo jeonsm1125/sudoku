@@ -1,5 +1,5 @@
 // 오프라인 실행용 서비스 워커. 파일을 고치면 CACHE 버전을 올려야 새 파일이 반영된다.
-const CACHE = 'sudoku-v6';
+const CACHE = 'sudoku-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 // 설치할 때는 브라우저 HTTP 캐시(GitHub Pages max-age=600)를 건너뛰고 서버에서 직접 받는다.
