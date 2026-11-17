@@ -62,6 +62,10 @@ img { max-width: 100%; }
   --error-soft: #3A1F1F; --hint: #4FD1A8; color-scheme: dark;
 }
 html { box-sizing: border-box; height: 100%; }
+/* 두 번 탭 확대 막기 (두 손가락 확대는 유지), 길게 눌렀을 때 글자 선택·복사 메뉴 막기 */
+html { touch-action: manipulation; }
+button, .cell, .key { touch-action: manipulation; }
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body {
   height: 100%; box-sizing: border-box;
   background: var(--bg); color: var(--ink); font-family: var(--font-body);
@@ -1470,7 +1474,7 @@ function SudokuGenFactory() {
 </script>
 <script>
 // 버전: sw.js 의 CACHE, version.json 과 같은 숫자로 함께 올린다
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 document.getElementById('ver').textContent = '버전 ' + APP_VERSION;
 
 // 서버의 최신 버전을 확인하고, 더 새로우면 저장된 파일을 지우고 새로 불러온다.
