@@ -321,6 +321,34 @@ h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spac
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--lv); margin-right: 8px; vertical-align: 1px; }
 .statsbtn { border-color: transparent; background: var(--accent-soft); color: var(--accent); }
 
+/* ---------- 단계별 힌트 ---------- */
+.hint-panel {
+  background: var(--surface); border: 1px solid color-mix(in srgb, var(--lv) 35%, var(--line)); border-radius: 16px;
+  padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--lv) 14%, transparent);
+}
+.hp-head { display: flex; align-items: center; justify-content: space-between; }
+.hp-step { display: inline-flex; align-items: center; gap: 8px; font: 700 .78rem var(--font-body); color: var(--lv); }
+.hp-dots { display: inline-flex; gap: 4px; }
+.hp-dots i { width: 18px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--lv) 22%, var(--surface)); }
+.hp-dots i.on { background: var(--lv); }
+.hp-close { border: 0; background: none; color: var(--muted); padding: 4px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.hp-close svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.hp-close:focus-visible, .hp-next:focus-visible { outline: 2px solid var(--lv); outline-offset: 2px; }
+.hp-title { margin: 0; font: 800 1.05rem var(--font-display); }
+.hp-body { font-size: .9rem; line-height: 1.55; color: var(--ink); text-wrap: pretty; max-height: 34vh; overflow-y: auto; }
+.hp-body b { color: var(--lv); font-family: var(--font-digit); font-weight: 600; }
+.hp-body ol { margin: 6px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.hp-next { background: var(--lv); color: #fff; align-self: stretch; }
+.cell.h-unit { background: color-mix(in srgb, var(--lv) 10%, var(--surface)); }
+.cell.h-why { background: color-mix(in srgb, var(--lv) 30%, var(--surface)); color: var(--ink); font-weight: 700; }
+.cell.h-target { background: color-mix(in srgb, var(--lv) 22%, var(--surface)); box-shadow: inset 0 0 0 3px var(--lv); z-index: 1; }
+.cell.h-target.hinted { color: var(--lv); font-weight: 700; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .cell.h-target { animation: hintPulse 1.4s ease-in-out infinite; }
+  @keyframes hintPulse { 50% { box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--lv) 55%, transparent); } }
+}
 @media (prefers-reduced-motion: no-preference) {
   .cell { transition: background-color .12s ease; }
   .overlay { animation: fade .3s ease; }
@@ -466,6 +494,16 @@ h1 small { font-weight: 400; font-size: .85rem; color: var(--muted); letter-spac
           <p id="busyText">문제를 만드는 중이에요</p>
         </div>
       </div>
+    </div>
+
+    <div class="hint-panel" id="hintPanel" hidden>
+      <div class="hp-head">
+        <span class="hp-step"><span class="hp-dots" id="hpDots" aria-hidden="true"><i></i><i></i><i></i></span><span id="hpStep"></span></span>
+        <button type="button" class="hp-close" id="hpClose" aria-label="힌트 닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <p class="hp-title" id="hpTitle"></p>
+      <div class="hp-body" id="hpBody"></div>
+      <button type="button" class="btn-primary hp-next" id="hpNext"></button>
     </div>
 
     <div class="pad" id="pad"></div>
@@ -747,7 +785,7 @@ function SudokuGenFactory() {
   const LV_COLORS = ['#1FA36B', '#13A0B5', '#2F6FE0', '#6A4EE0', '#A944D0', '#E0478A', '#E8582E'];
   const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>';
   const CHEVRON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
-  const HINTS = 3;
+  const HINTS = 5;
   const MAX_MISTAKES = 3;  // 이 횟수만큼 틀리면 실패
   const KEY = 'classic-sudoku-v1';
   const STATS_KEY = 'classic-sudoku-stats';
@@ -785,7 +823,7 @@ function SudokuGenFactory() {
   const fresh = (level, gen) => {
     const { puzzle, solution } = gen;
     return { level, tech: gen.tech, puzzle, solution, values: puzzle.slice(), notes: new Array(81).fill(0), hinted: new Array(81).fill(false),
-      mistakes: 0, seconds: 0, hintsLeft: HINTS, done: false, failed: false, paused: false, sel: puzzle.indexOf(0), history: [] };
+      mistakes: 0, seconds: 0, hintsLeft: HINTS, hintsMax: HINTS, done: false, failed: false, paused: false, sel: puzzle.indexOf(0), history: [] };
   };
   const blank = level => fresh(level, { puzzle: new Array(81).fill(0), solution: new Array(81).fill(0), tech: 0 });
   const save = () => { if (!S || busy) return; try { const { history, ...rest } = S; localStorage.setItem(KEY, JSON.stringify(rest)); } catch (e) {} };
@@ -795,6 +833,7 @@ function SudokuGenFactory() {
       if (!s || !s.puzzle || s.puzzle.length !== 81 || !s.solution.some(Boolean)) return null;
       if (typeof s.level !== 'number') s.level = { easy: 1, medium: 2, hard: 3 }[s.diff] ?? 2; // 3단계 시절 저장본
       if (!s.done && !s.failed && s.mistakes >= MAX_MISTAKES) s.mistakes = MAX_MISTAKES - 1; // 실수 제한 도입 전 저장본은 한 번의 기회를 남긴다
+      if (s.hintsMax == null) s.hintsMax = 3; // 힌트 3개 시절 저장본
       return { ...s, history: [] };
     } catch (e) { return null; }
   };
@@ -836,6 +875,7 @@ function SudokuGenFactory() {
   });
 
   const over = () => S.done || !!S.failed;
+  const hintsUsed = () => (S.hintsMax ?? 3) - S.hintsLeft;
   const mistakeText = () => S.mistakes + '/' + MAX_MISTAKES;
   const hasGame = () => !!S && !over() && !busy && S.solution.some(Boolean);
   const inProgress = () => hasGame() && (S.seconds > 0 || S.values.some((v, i) => v && S.puzzle[i] === 0));
@@ -934,9 +974,13 @@ function SudokuGenFactory() {
       el.classList.toggle('entered', !given && !!v && !S.hinted[i]);
       el.classList.toggle('hinted', !given && !!v && S.hinted[i]);
       el.classList.toggle('err', !!err);
-      el.classList.toggle('sel', i === sel && !busy);
-      el.classList.toggle('same', i !== sel && !!selVal && v === selVal);
-      el.classList.toggle('peer', i !== sel && !busy && peerSet.has(i) && !(selVal && v === selVal));
+      const hs = !!HS && !busy;
+      el.classList.toggle('sel', i === sel && !busy && !hs);
+      el.classList.toggle('same', !hs && i !== sel && !!selVal && v === selVal);
+      el.classList.toggle('peer', !hs && i !== sel && !busy && peerSet.has(i) && !(selVal && v === selVal));
+      el.classList.toggle('h-unit', hs && HS.unitSet.has(i));
+      el.classList.toggle('h-target', hs && i === HS.h.cell);
+      el.classList.toggle('h-why', hs && HS.step >= 2 && HS.whySet.has(i));
       if (v) { el.textContent = v; }
       else if (S.notes[i]) {
         let h = '<span class="notes">';
@@ -969,6 +1013,7 @@ function SudokuGenFactory() {
     $('mistakes').classList.toggle('warn', S.mistakes >= MAX_MISTAKES - 1);
     $('time').textContent = fmt(S.seconds);
     $('hintBadge').textContent = S.hintsLeft;
+    renderHint();
     $('noteBtn').setAttribute('aria-pressed', noteMode);
     $('noteBadge').textContent = noteMode ? 'ON' : 'OFF';
     $('busy').hidden = !busy;
@@ -977,7 +1022,7 @@ function SudokuGenFactory() {
     $('fail').hidden = !S.failed || busy;
     if (S.failed) $('failText').textContent = '실수 ' + mistakeText() + ' · ' + LEVELS[S.level].label + ' · ' + fmt(S.seconds);
     if (S.done) $('winText').textContent = (lastResult && lastResult.best ? '최고 기록 · ' : '') +
-      LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + mistakeText() + ' · 힌트 ' + (HINTS - S.hintsLeft) + '회';
+      LEVELS[S.level].label + ' · ' + fmt(S.seconds) + ' · 실수 ' + mistakeText() + ' · 힌트 ' + hintsUsed() + '회';
   }
 
   const snapshot = () => { S.history.push({ values: S.values.slice(), notes: S.notes.slice(), hinted: S.hinted.slice() }); if (S.history.length > 200) S.history.shift(); };
@@ -988,7 +1033,7 @@ function SudokuGenFactory() {
     if (S.recorded) return;
     S.recorded = true;
     const hist = loadHistory(), before = levelStats(hist, S.level);
-    const g = { t: Date.now(), l: S.level, r: result, s: S.seconds, m: S.mistakes, h: HINTS - S.hintsLeft };
+    const g = { t: Date.now(), l: S.level, r: result, s: S.seconds, m: S.mistakes, h: hintsUsed() };
     hist.push(g); saveHistory(hist);
     lastResult = { ...g, best: result === 'win' && (before.best == null || g.s < before.best), prevAvg: before.avg, firstWin: result === 'win' && before.wins === 0 };
     setTimeout(() => {
@@ -1007,6 +1052,7 @@ function SudokuGenFactory() {
   const isComplete = d => S.values.filter((v, k) => v === d && v === S.solution[k]).length >= 9;
   function input(d) {
     const i = S ? S.sel : -1; if (!editable(i)) return;
+    closeHint();
     if (isComplete(d)) return; // 9개를 모두 맞게 채운 숫자는 입력·메모 모두 막는다
     if (noteMode) {
       if (S.values[i]) return;
@@ -1019,23 +1065,246 @@ function SudokuGenFactory() {
   }
   function erase() {
     const i = S ? S.sel : -1; if (!editable(i) || (!S.values[i] && !S.notes[i])) return;
+    closeHint();
     snapshot(); S.values[i] = 0; S.notes[i] = 0; save(); render();
   }
   function undo() {
     if (!S || over() || busy || S.paused) return;
     const h = S.history.pop(); if (!h) return;
+    closeHint();
     S.values = h.values; S.notes = h.notes; S.hinted = h.hinted; save(); render();
   }
-  function hint() {
-    if (!S || over() || busy || S.paused || S.hintsLeft <= 0) return;
-    let i = S.sel;
-    if (!(i >= 0 && S.puzzle[i] === 0 && S.values[i] !== S.solution[i])) {
-      const open = []; for (let k = 0; k < 81; k++) if (S.values[k] !== S.solution[k]) open.push(k);
-      if (!open.length) return; i = open[Math.floor(Math.random() * open.length)];
+  // ---------- 단계별 힌트: 위치 → 설명 → 정답 ----------
+  const ROWS = [], COLS = [], BOXES = [];
+  for (let k = 0; k < 9; k++) { ROWS.push([]); COLS.push([]); BOXES.push([]); }
+  for (let i = 0; i < 81; i++) { const r = Math.floor(i / 9), c = i % 9; ROWS[r].push(i); COLS[c].push(i); BOXES[Math.floor(r / 3) * 3 + Math.floor(c / 3)].push(i); }
+  const BOX_NAMES = ['왼쪽 위', '위 가운데', '오른쪽 위', '왼쪽 가운데', '한가운데', '오른쪽 가운데', '왼쪽 아래', '아래 가운데', '오른쪽 아래'];
+  const boxOfCell = i => Math.floor(Math.floor(i / 9) / 3) * 3 + Math.floor((i % 9) / 3);
+  const cellName = i => (Math.floor(i / 9) + 1) + '행 ' + (i % 9 + 1) + '열';
+  const unitName = (type, k) => type === 'row' ? (k + 1) + '행' : type === 'col' ? (k + 1) + '열' : BOX_NAMES[k] + ' 박스';
+  const unitCells = (type, k) => type === 'row' ? ROWS[k] : type === 'col' ? COLS[k] : BOXES[k];
+  const ALL_UNITS = [...ROWS.map((u, k) => ['row', k, u]), ...COLS.map((u, k) => ['col', k, u]), ...BOXES.map((u, k) => ['box', k, u])];
+  const pc = m => { let n = 0; for (; m; m &= m - 1) n++; return n; };
+  const digitsOf = m => { const a = []; for (let d = 1; d <= 9; d++) if (m & (1 << d)) a.push(d); return a; };
+  // 숫자 읽기의 받침 여부: 1(일) 3(삼) 6(육) 7(칠) 8(팔)은 받침이 있다
+  const hasBatchim = d => [1, 3, 6, 7, 8].includes(d);
+  const jo = (d, withB, withoutB) => d + (hasBatchim(d) ? withB : withoutB);
+  const B = d => '<b>' + d + '</b>';
+  const Bj = (d, withB, withoutB) => '<b>' + d + '</b>' + (hasBatchim(d) ? withB : withoutB);
+
+  // 맞게 채운 숫자만 기준으로 각 칸의 후보 계산 (틀린 숫자는 빈칸으로 본다)
+  function hintBoard() {
+    const v = S.values.map((x, i) => (x && x === S.solution[i]) ? x : 0);
+    const cand = new Array(81).fill(0);
+    for (let i = 0; i < 81; i++) {
+      if (v[i]) continue;
+      let m = 0x3FE; for (const p of PEERS[i]) if (v[p]) m &= ~(1 << v[p]);
+      cand[i] = m;
     }
-    snapshot(); S.hinted[i] = true; S.hintsLeft--; S.sel = i;
-    const before = S.mistakes; place(i, S.solution[i]); S.mistakes = before;
-    save(); render();
+    return { v, cand };
+  }
+
+  // 바로 정해지는 칸 찾기: 빈칸 하나 남은 줄 → 자리가 하나뿐인 숫자(박스·행·열) → 후보가 하나뿐인 칸
+  function findSingles(v, cand) {
+    const K = { full: [], hiddenBox: [], hiddenLine: [], naked: [] };
+    for (const [type, k, u] of ALL_UNITS) {
+      const empty = u.filter(i => !v[i]);
+      if (empty.length === 1) { K.full.push({ kind: 'full', cell: empty[0], d: S.solution[empty[0]], type, k }); continue; }
+      for (let d = 1; d <= 9; d++) {
+        if (u.some(i => v[i] === d)) continue;
+        const pos = empty.filter(i => cand[i] & (1 << d));
+        if (pos.length === 1 && S.solution[pos[0]] === d) (type === 'box' ? K.hiddenBox : K.hiddenLine).push({ kind: 'hidden', cell: pos[0], d, type, k });
+      }
+    }
+    for (let i = 0; i < 81; i++) if (!v[i] && pc(cand[i]) === 1) K.naked.push({ kind: 'naked', cell: i, d: S.solution[i] });
+    return [K.full, K.hiddenBox, K.hiddenLine, K.naked];
+  }
+  function pickSingle(lists, prefer) {
+    if (prefer >= 0) for (const L of lists) { const h = L.find(x => x.cell === prefer); if (h) return h; }
+    for (const L of lists) if (L.length) return L[Math.floor(Math.random() * L.length)];
+    return null;
+  }
+
+  function combos(arr, k, fn) {
+    const pick = [];
+    const rec = st => { if (pick.length === k) return fn(pick); for (let i = st; i <= arr.length - (k - pick.length); i++) { pick.push(arr[i]); if (rec(i + 1)) return true; pick.pop(); } return false; };
+    return rec(0);
+  }
+  // 후보 지우기 기법 한 번 적용. 적용했으면 사람이 읽을 설명을 반환
+  function eliminateOnce(v, cand) {
+    const strip = (cells, mask) => { let ch = false; for (const i of cells) if (!v[i] && (cand[i] & mask)) { cand[i] &= ~mask; ch = true; } return ch; };
+    // 교차 1: 박스 안에서 숫자가 한 줄에만 있으면 그 줄의 다른 박스에서 지운다
+    for (let b = 0; b < 9; b++) for (let d = 1; d <= 9; d++) {
+      const pos = BOXES[b].filter(i => !v[i] && (cand[i] & (1 << d))); if (pos.length < 2) continue;
+      const rs = new Set(pos.map(i => Math.floor(i / 9))), cs = new Set(pos.map(i => i % 9));
+      if (rs.size === 1) { const r = [...rs][0]; if (strip(ROWS[r].filter(i => boxOfCell(i) !== b), 1 << d)) return { text: BOX_NAMES[b] + ' 박스에서 ' + Bj(d, '은', '는') + ' ' + (r + 1) + '행에만 들어갈 수 있어요. 그래서 ' + (r + 1) + '행의 다른 박스 칸에서는 ' + jo(d, '을', '를') + ' 후보에서 지워요.', name: '교차' }; }
+      if (cs.size === 1) { const c = [...cs][0]; if (strip(COLS[c].filter(i => boxOfCell(i) !== b), 1 << d)) return { text: BOX_NAMES[b] + ' 박스에서 ' + Bj(d, '은', '는') + ' ' + (c + 1) + '열에만 들어갈 수 있어요. 그래서 ' + (c + 1) + '열의 다른 박스 칸에서는 ' + jo(d, '을', '를') + ' 후보에서 지워요.', name: '교차' }; }
+    }
+    // 교차 2: 줄 안에서 숫자가 한 박스에만 있으면 그 박스의 다른 칸에서 지운다
+    for (const [type, k, u] of ALL_UNITS) {
+      if (type === 'box') continue;
+      for (let d = 1; d <= 9; d++) {
+        const pos = u.filter(i => !v[i] && (cand[i] & (1 << d))); if (pos.length < 2) continue;
+        const bs = new Set(pos.map(boxOfCell)); if (bs.size !== 1) continue;
+        const b = [...bs][0];
+        if (strip(BOXES[b].filter(i => !u.includes(i)), 1 << d)) return { text: unitName(type, k) + '에서 ' + Bj(d, '은', '는') + ' ' + BOX_NAMES[b] + ' 박스 안에만 들어갈 수 있어요. 그래서 그 박스의 다른 칸에서는 ' + jo(d, '을', '를') + ' 후보에서 지워요.', name: '교차' };
+      }
+    }
+    // 숫자 묶음(짝·셋): n칸에 후보가 같은 n개뿐이면 같은 줄의 다른 칸에서 지운다 / n개 숫자가 n칸에만 있으면 그 칸의 다른 후보를 지운다
+    for (const n of [2, 3]) {
+      const word = n === 2 ? '두' : '세';
+      for (const [type, k, u] of ALL_UNITS) {
+        const open = u.filter(i => !v[i] && pc(cand[i]) >= 2 && pc(cand[i]) <= n);
+        let found = null;
+        if (open.length >= n) combos(open, n, pick => {
+          let m = 0; for (const i of pick) m |= cand[i];
+          if (pc(m) !== n) return false;
+          if (strip(u.filter(i => !pick.includes(i)), m)) { found = { text: unitName(type, k) + '의 ' + word + ' 칸(' + pick.map(cellName).join(', ') + ')에는 ' + digitsOf(m).map(B).join(', ') + '만 들어갈 수 있어요. 그래서 ' + unitName(type, k) + '의 다른 칸에서는 이 숫자들을 후보에서 지워요.', name: '숫자 짝' }; return true; }
+          return false;
+        });
+        if (found) return found;
+        const ds = [], posOf = {};
+        for (let d = 1; d <= 9; d++) {
+          if (u.some(i => v[i] === d)) continue;
+          const pos = u.filter(i => !v[i] && (cand[i] & (1 << d)));
+          if (pos.length >= 2 && pos.length <= n) { ds.push(d); posOf[d] = pos; }
+        }
+        if (ds.length >= n) combos(ds, n, pick => {
+          const cells = [...new Set(pick.flatMap(d => posOf[d]))];
+          if (cells.length !== n) return false;
+          let m = 0; for (const d of pick) m |= 1 << d;
+          let ch = false; for (const i of cells) if (cand[i] & ~m & 0x3FE) { cand[i] &= m; ch = true; }
+          if (ch) { found = { text: unitName(type, k) + '에서 ' + pick.map(B).join(', ') + (hasBatchim(pick[pick.length - 1]) ? '은' : '는') + ' ' + word + ' 칸(' + cells.map(cellName).join(', ') + ')에만 들어갈 수 있어요. 그래서 그 칸들의 다른 후보는 지워요.', name: '숨은 짝' }; return true; }
+          return false;
+        });
+        if (found) return found;
+      }
+    }
+    // X-Wing: 두 행에서 숫자가 같은 두 열에만 있으면 그 두 열의 다른 칸에서 지운다 (열 기준도 같음)
+    for (let d = 1; d <= 9; d++) for (const [base, cover, bn, cn] of [[ROWS, COLS, '행', '열'], [COLS, ROWS, '열', '행']]) {
+      const lines = [];
+      for (let l = 0; l < 9; l++) { const pos = []; base[l].forEach((i, j) => { if (!v[i] && (cand[i] & (1 << d))) pos.push(j); }); if (pos.length === 2) lines.push([l, pos]); }
+      for (let a = 0; a < lines.length; a++) for (let b2 = a + 1; b2 < lines.length; b2++) {
+        const [l1, p1] = lines[a], [l2, p2] = lines[b2];
+        if (p1[0] !== p2[0] || p1[1] !== p2[1]) continue;
+        const targets = p1.flatMap(j => cover[j].filter((_, idx) => idx !== l1 && idx !== l2));
+        if (strip(targets, 1 << d)) return { text: Bj(d, '은', '는') + ' ' + (l1 + 1) + bn + '과 ' + (l2 + 1) + bn + '에서 각각 ' + (p1[0] + 1) + cn + '·' + (p1[1] + 1) + cn + ' 두 자리에만 들어갈 수 있어요(X-Wing). 그래서 ' + (p1[0] + 1) + cn + '과 ' + (p1[1] + 1) + cn + '의 다른 칸에서는 ' + jo(d, '을', '를') + ' 후보에서 지워요.', name: 'X-Wing' };
+      }
+    }
+    return null;
+  }
+
+  // 힌트 하나 만들기: { cell, d, kind, unit[], why[], loc, why텍스트 }
+  function buildHint() {
+    const prefer = S.sel;
+    const wrongs = []; for (let i = 0; i < 81; i++) if (S.values[i] && !S.puzzle[i] && S.values[i] !== S.solution[i]) wrongs.push(i);
+    if (wrongs.length) {
+      const i = wrongs.includes(prefer) ? prefer : wrongs[0], x = S.values[i], d = S.solution[i];
+      const clash = PEERS[i].filter(p => S.values[p] === x);
+      let where = '';
+      if (clash.length) { const p = clash[0]; where = Math.floor(p / 9) === Math.floor(i / 9) ? '행' : p % 9 === i % 9 ? '열' : '박스'; }
+      return { cell: i, d, kind: 'wrong', unit: [], why: clash,
+        loc: cellName(i) + ' 칸에 넣은 ' + Bj(x, '을', '를') + ' 다시 확인해 보세요.',
+        explain: clash.length
+          ? '같은 ' + where + '에 ' + Bj(x, '이', '가') + ' 이미 있어요(강조한 칸). 한 행·열·박스에는 같은 숫자가 두 번 들어갈 수 없어요.'
+          : '지금 넣은 ' + Bj(x, '은', '는') + ' 바로 겹치지는 않지만 정답과 달라요. 그대로 두면 나중에 다른 칸이 막히게 돼요.' };
+    }
+    const { v, cand } = hintBoard();
+    let h = pickSingle(findSingles(v, cand), prefer);
+    if (h) return describeSingle(h, v, cand, null);
+    // 바로 정해지는 칸이 없으면 기법으로 후보를 지워 가며 찾는다
+    const steps = [];
+    for (let t = 0; t < 60; t++) {
+      const st = eliminateOnce(v, cand); if (!st) break;
+      steps.push(st);
+      h = pickSingle(findSingles(v, cand), prefer);
+      if (h) return describeSingle(h, v, cand, steps);
+    }
+    // 기법으로도 막히면 후보가 가장 적은 칸
+    let best = -1; for (let i = 0; i < 81; i++) if (!v[i] && (best < 0 || pc(cand[i]) < pc(cand[best]))) best = i;
+    const list = digitsOf(cand[best]);
+    return { cell: best, d: S.solution[best], kind: 'guess', unit: PEERS[best].concat(best), why: [],
+      loc: cellName(best) + ' 칸은 후보가 ' + list.length + '개(' + list.map(B).join(', ') + ')뿐이에요.',
+      explain: '지금은 알려진 패턴만으로는 막히는 단계예요. 이럴 때는 후보가 가장 적은 칸에서 ' + Bj(list[0], '을', '를') + ' 넣었다고 가정하고 계속 풀어 봐요. 어딘가에서 같은 줄에 숫자가 겹치면 그 가정이 틀린 거라 다른 후보가 정답이에요.' };
+  }
+
+  function describeSingle(h, v, cand, steps) {
+    const i = h.cell, d = h.d;
+    let unit = [], why = [], loc = '', explain = '';
+    if (h.kind === 'full') {
+      unit = unitCells(h.type, h.k);
+      loc = unitName(h.type, h.k) + '에 빈칸이 하나만 남았어요.';
+      explain = unitName(h.type, h.k) + '에는 1~9 중 ' + Bj(d, '만', '만') + ' 아직 없어요. 그래서 남은 한 칸에 ' + jo(d, '이', '가') + ' 들어가요.';
+    } else if (h.kind === 'hidden') {
+      unit = unitCells(h.type, h.k);
+      const others = unit.filter(c => !v[c] && c !== i);
+      // 다른 빈칸마다 그 칸을 막는 숫자 d 하나를 찾아 강조
+      for (const c of others) {
+        const blocker = PEERS[c].find(p => v[p] === d && !unit.includes(p));
+        if (blocker != null && !why.includes(blocker)) why.push(blocker);
+      }
+      const line = h.type === 'box' ? '같은 행이나 열' : h.type === 'row' ? '같은 열이나 박스' : '같은 행이나 박스';
+      loc = unitName(h.type, h.k) + '에서 숫자 ' + Bj(d, '이', '가') + ' 들어갈 자리를 찾아보세요.';
+      explain = unitName(h.type, h.k) + '에는 빈칸이 ' + (others.length + 1) + '곳 있어요. 그중 ' + cellName(i) + ' 칸을 뺀 나머지는 ' + line + '에 강조한 ' + Bj(d, '이', '가') + ' 이미 있어서 ' + jo(d, '을', '를') + ' 넣을 수 없어요. 그래서 ' + Bj(d, '이', '가') + ' 들어갈 자리는 이 칸 하나뿐이에요.';
+    } else {
+      unit = PEERS[i].slice();
+      const seen = {};
+      for (const p of PEERS[i]) if (v[p] && !seen[v[p]]) { seen[v[p]] = true; why.push(p); }
+      const present = Object.keys(seen).map(Number).sort((a, b) => a - b);
+      loc = cellName(i) + ' 칸에 들어갈 수 있는 숫자를 세어 보세요. 같은 행·열·박스를 함께 보면 돼요.';
+      explain = steps ? '' : '이 칸과 같은 행·열·박스에 ' + present.map(B).join(', ') + (hasBatchim(present[present.length - 1]) ? '이' : '가') + ' 이미 있어요. 1~9 중 남은 숫자는 ' + Bj(d, '', '') + ' 하나뿐이에요.';
+    }
+    if (steps) {
+      // 기법을 거쳐서 정해진 경우: 판 강조는 칸만, 설명은 지운 과정 + 마지막 결론
+      why = [];
+      const shown = steps.slice(-3);
+      const names = [...new Set(steps.map(s => s.name))].join(', ');
+      loc = cellName(i) + ' 칸이 다음으로 풀 수 있는 칸이에요. 바로 정해지지는 않아서 후보 숫자를 지워 가며 봐야 해요.';
+      explain = '<span>기본 추론만으로는 바로 정해지는 칸이 없어서 ' + names + ' 기법으로 후보를 정리했어요.</span><ol>' +
+        (steps.length > shown.length ? '<li>앞의 ' + (steps.length - shown.length) + '단계는 생략했어요.</li>' : '') +
+        shown.map(s => '<li>' + s.text + '</li>').join('') + '</ol><span>' +
+        (h.kind === 'naked' ? '그러면 이 칸에 남는 후보는 ' + Bj(d, '', '') + ' 하나예요.' : '그러면 ' + unitName(h.type, h.k) + '에서 ' + Bj(d, '이', '가') + ' 들어갈 자리는 이 칸 하나만 남아요.') + '</span>';
+    }
+    return { cell: i, d, kind: h.kind, unit, why, loc, explain };
+  }
+
+  // 힌트 진행 상태 (저장하지 않음)
+  let HS = null; // { h, step: 1|2|3, unitSet, whySet }
+  function closeHint() { if (!HS) return; HS = null; renderHint(); }
+  function hint() {
+    if (!S || over() || busy || S.paused) return;
+    if (HS) { closeHint(); render(); return; }
+    if (S.hintsLeft <= 0) return;
+    const h = buildHint(); if (!h) return;
+    S.hintsLeft--; save();
+    HS = { h, step: 1, unitSet: new Set(h.unit), whySet: new Set(h.why) };
+    S.sel = h.cell;
+    render();
+  }
+  function hintNext() {
+    if (!HS) return;
+    if (HS.step === 1) { HS.step = 2; render(); return; }
+    if (HS.step === 2) {
+      const { cell: i, d } = HS.h;
+      snapshot(); S.hinted[i] = true; S.notes[i] = 0;
+      const before = S.mistakes; place(i, d); S.mistakes = before;
+      HS.step = 3; save(); render(); return;
+    }
+    closeHint(); render();
+  }
+  function renderHint() {
+    const open = !!HS && !busy && screen === 'game';
+    $('hintPanel').hidden = !open;
+    $('pad').hidden = open; document.querySelector('.tools').hidden = open;
+    if (open) {
+      const { h, step } = HS;
+      $('hpStep').textContent = step + '/3 · ' + ['위치', '설명', '정답'][step - 1];
+      [...$('hpDots').children].forEach((el, k) => el.classList.toggle('on', k < step));
+      $('hpTitle').textContent = step === 1 ? '여기를 보세요' : step === 2 ? '왜 그럴까요' : '정답은 ' + h.d + (hasBatchim(h.d) ? '이에요' : '예요');
+      $('hpBody').innerHTML = step === 1 ? h.loc : step === 2 ? h.explain : cellName(h.cell) + ' 칸에 ' + Bj(h.d, '을', '를') + ' 넣었어요.' + (h.kind === 'wrong' ? ' 틀린 숫자를 고쳤어요.' : '');
+      $('hpNext').textContent = step === 1 ? '설명 보기' : step === 2 ? '정답 보기' : '닫기';
+    }
+    fitBoard();
   }
 
   // 난이도 선택: 진행 중인 게임이 있으면 시작 화면에서 한 번 확인
@@ -1052,7 +1321,7 @@ function SudokuGenFactory() {
   async function startNew(level) {
     if (busy) return;
     $('confirm').hidden = true; pendingLevel = null;
-    S = blank(level); busy = true; busyLevel = level;
+    S = blank(level); HS = null; busy = true; busyLevel = level;
     showScreen('game');
     const gen = await generateAsync(level);
     S = fresh(level, gen); busy = false; save();
@@ -1131,7 +1400,7 @@ function SudokuGenFactory() {
     ).join('');
   }
   const retrySame = () => {
-    S = fresh(S.level, { puzzle: S.puzzle, solution: S.solution, tech: S.tech }); noteMode = false; save(); showScreen('game');
+    S = fresh(S.level, { puzzle: S.puzzle, solution: S.solution, tech: S.tech }); HS = null; noteMode = false; save(); showScreen('game');
   };
   $('statsBtn').addEventListener('click', () => { history.pushState(null, '', '#stats'); showScreen('stats', false); });
   $('statsBack').addEventListener('click', goHome);
@@ -1156,11 +1425,14 @@ function SudokuGenFactory() {
   $('undoBtn').addEventListener('click', undo);
   $('eraseBtn').addEventListener('click', erase);
   $('hintBtn').addEventListener('click', hint);
+  $('hpNext').addEventListener('click', hintNext);
+  $('hpClose').addEventListener('click', () => { closeHint(); render(); });
   $('noteBtn').addEventListener('click', () => { noteMode = !noteMode; render(); });
 
   document.addEventListener('keydown', e => {
     if (screen !== 'game' || !S) return;
-    if (e.key === 'Escape' && !S.paused) { goHome(); return; }
+    if (e.key === 'Escape' && !S.paused) { if (HS) { closeHint(); render(); } else goHome(); return; }
+    if (HS && e.key === 'Enter') { e.preventDefault(); hintNext(); return; }
     if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === 'p') { setPaused(!S.paused); return; }
     if (S.paused) { if (e.key === 'Escape' || e.key === 'Enter') setPaused(false); return; }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
@@ -1198,7 +1470,7 @@ function SudokuGenFactory() {
 </script>
 <script>
 // 버전: sw.js 의 CACHE, version.json 과 같은 숫자로 함께 올린다
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 document.getElementById('ver').textContent = '버전 ' + APP_VERSION;
 
 // 서버의 최신 버전을 확인하고, 더 새로우면 저장된 파일을 지우고 새로 불러온다.
